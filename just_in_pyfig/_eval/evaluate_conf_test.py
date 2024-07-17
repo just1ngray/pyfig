@@ -74,6 +74,12 @@ def test__given_full_non_string_replacement__when_evaluate_string__then_respects
     mock_evaluator = VariableEvaluator(repl=replacement)
     assert _evaluate_string("${var.repl}", [mock_evaluator]) == replacement
 
+def test__given_no_evaluation_args__when_evaluate_string__then_calls_evaluator_with_empty_string():
+    mock_evaluator = Mock(spec=AbstractEvaluator)
+    mock_evaluator.name.return_value = "mock"
+    _evaluate_string("${mock}", [mock_evaluator])
+    mock_evaluator.evaluate.assert_called_once_with("")
+
 def test__given_empty_dict__when_evaluate__then_no_error():
     conf = {}
     evaluate_conf(conf, [Mock(side_effect=Exception())])
@@ -146,7 +152,7 @@ def test__given_dict_with_nested_strings__when_evaluate_conf__then_replaces_temp
     }
 
 def test__given_recursive_evaluator__when_evaluate_conf__then_evaluates_recursively():
-    evaluator = VariableEvaluator(prefix="${co", suffix="ol}", cool="Wow!")
-    conf = { "key": "${prefix}${suffix}" }
+    evaluator = VariableEvaluator(prefix="${var.", suffix="cool}", cool="Wow!")
+    conf = { "key": "${var.prefix}${var.suffix}" }
     evaluate_conf(conf, [evaluator])
     assert conf == { "key": "Wow!" }

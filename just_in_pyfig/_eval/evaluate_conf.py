@@ -20,19 +20,19 @@ def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> Abs
         return candidate
 
 
-_TEMPLATE_PATTERN = re.compile(r"\$\{(?P<evaluator>[A-Za-z0-9_-]*)\.(?P<value>[^}]*)\}")
+_TEMPLATE_PATTERN = re.compile(r"\$\{(?P<evaluator>[A-Za-z0-9_-]*)(\.(?P<value>[^}]*))?\}")
 
 
 def _evaluate_string(string: str, evaluators: Collection[AbstractEvaluator]) -> Any:
     # if the entire string is a template, evaluate it and keep the type
     if full_match := _TEMPLATE_PATTERN.fullmatch(string):
         evaluator = _find_evaluator(full_match.group("evaluator"), evaluators)
-        return evaluator.evaluate(full_match.group("value"))
+        return evaluator.evaluate(full_match.group("value") or "")
 
     # otherwise, replace only the relevant substring(s)
     return re.sub(
         _TEMPLATE_PATTERN,
-        lambda m: str(_find_evaluator(m.group("evaluator"), evaluators).evaluate(m.group("value"))),
+        lambda m: str(_find_evaluator(m.group("evaluator"), evaluators).evaluate(m.group("value") or "")),
         string
     )
 
