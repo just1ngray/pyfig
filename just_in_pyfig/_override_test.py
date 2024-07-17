@@ -171,6 +171,22 @@ def test__given_nested_conf__when_override_nested_key_different_type__then_sets(
         "level": 3
     }
 
+def test__given_flat_conf__when_override_with_nested_dict__then_overrides_with_nested():
+    conf = {
+        "a": 1,
+        "b": 2
+    }
+    override = {
+        "a": {
+            "nested": 100
+        }
+    }
+    apply_overrides(conf, override)
+    assert conf == {
+        "a": { "nested": 100 },
+        "b": 2
+    }
+
 def test__given_nested_conf__when_override_unknown_nested_key__then_raises_key_error():
     conf = {
         "top": {

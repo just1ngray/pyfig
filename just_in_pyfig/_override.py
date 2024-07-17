@@ -39,12 +39,14 @@ def apply_overrides(conf: Dict, override: Dict, trace: str="") -> None:
     Returns:
         None (mutates `conf` in place)
     """
+    print("+", trace, type(conf), type(override))
+
     for key, value in override.items():
         if key not in conf:
             # TODO: consider logging a warning instead depending on some argument
             raise KeyError(f"Unknown key '{key}' in override ({trace or 'root'})")
 
-        if isinstance(value, dict):
+        if isinstance(conf[key], dict) and isinstance(value, dict):
             apply_overrides(conf[key], value, trace=f"{trace}.{key}")
         else:
             conf[key] = value
