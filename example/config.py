@@ -42,7 +42,7 @@ def get_config() -> ApplicationConfig:
     if not os.environ.get("EXAMPLE_API_KEY"):
         os.environ["EXAMPLE_API_KEY"] = "mocked api key"
 
-    loader = Metafig.from_path("metaconf.yaml")
+    loader = Metafig.from_path("example/metaconf.yaml")
     return loader.load_config(ApplicationConfig)
 
 

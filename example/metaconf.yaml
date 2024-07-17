@@ -6,9 +6,9 @@ evaluators:
   pyfig.EnvironmentEvaluator: {}
 
 configs:
-  - configs/special_mode.yml
-  - configs/do_health_check.json
-  - configs/prod.yaml
+  - example/configs/special_mode.yml
+  - example/configs/do_health_check.json
+  - example/configs/prod.yaml
 
 overrides:
   name: "Production Application"
