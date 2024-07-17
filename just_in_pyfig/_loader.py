@@ -5,6 +5,19 @@ from ._pyfig import Pyfig
 
 T = TypeVar("T", bound=Pyfig)
 
+def _unify_overrides(*overrides: Dict) -> Dict:
+    unified = {}
+
+    for override in reversed(overrides):
+        for key, value in override.items():
+            if key in unified and isinstance(value, dict) and isinstance(unified[key], dict):
+                unified[key] = _unify_overrides(value, unified[key])
+            else:
+                unified[key] = value
+
+    return unified
+
+
 def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> Dict:
     for key, value in override.items():
         if key not in conf:

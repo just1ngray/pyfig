@@ -1,6 +1,107 @@
 import pytest
 
-from ._loader import _apply_override_to_conf
+from ._loader import _unify_overrides, _apply_override_to_conf
+
+class TestUnifyOverrides:
+    def test__given_no_overrides__when_unify_overrides__then_returns_empty_dict(self):
+        assert _unify_overrides() == {}
+
+    def test__given_single_override_dict__when_unify_overrides__then_returns_that_dict(self):
+        override = {
+            "one": 1,
+            "two": 2,
+            "three": 3
+        }
+        assert _unify_overrides(override) == override
+
+    def test__given_disjoint_dicts__when_unify_overrides__then_returns_union(self):
+        first = { "a": 1 }
+        second = { "b": 2, "nested": { "c": 3 } }
+        unified = _unify_overrides(first, second)
+        assert unified == { "a": 1, "b": 2, "nested": {"c":3} }
+
+    def test__given_two_completely_overriding_dicts__when_unify_overrides__then_returns_first_dict(self):
+        first = { "a": 1 }
+        second = { "a": 100 }
+        unified = _unify_overrides(first, second)
+        assert unified == first
+
+    def test__given_partial_overlapping_dicts__when_unify_overrides__then_second_with_first_as_overrides(self):
+        first  = { "a": 1, "b": 2           }
+        second = {         "b": 200, "c": 3 }
+        unified = _unify_overrides(first, second)
+        assert unified == { "a": 1, "b": 2, "c": 3 }
+
+    def test__given_nested_dict__when_unify_overrides__then_merges_deeply(self):
+        lo = {
+            "top": {
+                "a": 1,
+                "b": 2
+            },
+            "other": "unrelated"
+        }
+        hi = {
+            "top": { "a": 100, }
+        }
+        unified = _unify_overrides(hi, lo)
+        assert unified == {
+            "top": { "a": 100, "b": 2 },
+            "other": "unrelated"
+        }
+
+    def test__given_nested_dict__when_unify_overrides_with_not_so_nested__then_removes_nesting(self):
+        lo = {
+            "top": {
+                "a": 1,
+                "b": 2
+            },
+            "other": "unrelated"
+        }
+        hi = { "top": "overridden" }
+        unified = _unify_overrides(hi, lo)
+        assert unified == {
+            "top": "overridden",
+            "other": "unrelated"
+        }
+
+    def test__given_array__when_unify_overrides__then_sets_atomically(self):
+        lo = { "array": [1, 2, 3] }
+        hi = { "array": [4, 5, 6] }
+        unified = _unify_overrides(hi, lo)
+        assert unified == hi
+
+    def test__given_multiple_disjoint_dicts__when_unify_overrides__then_returns_union(self):
+        first  = { "a": 1 }
+        second = { "b": 2 }
+        third  = { "c": 3 }
+        unified = _unify_overrides(first, second, third)
+        assert unified == { "a": 1, "b": 2, "c": 3 }
+
+    def test__given_multiple_overlapping_dicts__when_unify_overrides__then_overrides_highest_to_lowest(self):
+        base     = { "a": 1, "b": 2          }
+        override = {         "b": 20, "c": 3 }
+        top      = {         "b": 200        }
+        unified = _unify_overrides(top, override, base)
+        assert unified == { "a": 1, "b": 200, "c": 3 }
+
+    def test__given_same_key_overridden_differently__when_unify_overrides__then_first_override_wins(self):
+        first  = { "a": 1 }
+        second = { "a": {
+            "nested": "stuff"
+        }}
+        third  = { "a": "different type" }
+        unified = _unify_overrides(first, second, third)
+        assert unified == first
+
+    def test__given_same_key_overridden_with_more_fields__when_unify_overrides__then_merges_deeply(self):
+        first  = { "a": { "nested": "stuff" }}
+        second = { "a": { "more": "stuff" }}
+        unified = _unify_overrides(first, second)
+        assert unified == { "a": {
+            "nested": "stuff",
+            "more": "stuff"
+        }}
+
 
 class TestApplyOverrideToConf:
     def test__given_empty_dict__when_override_with_stuff__then_raises_key_error(self):
