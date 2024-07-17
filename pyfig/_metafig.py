@@ -82,6 +82,10 @@ def _construct_evaluator(class_path: str, params: Dict[str, Any]):
     module_path, class_name = class_path.rsplit(".", 1)
     module = importlib.import_module(module_path) # TODO: create a better error message!
     evaluator_class = getattr(module, class_name)
+
+    if not issubclass(evaluator_class, AbstractEvaluator):
+        raise TypeError(f"{evaluator_class} is not a subclass of AbstractEvaluator")
+
     return evaluator_class(**params)
 
 
