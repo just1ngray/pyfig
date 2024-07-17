@@ -82,6 +82,13 @@ def test__given_no_evaluation_args__when_evaluate_string__then_calls_evaluator_w
     _evaluate_string("${{mock}}", [mock_evaluator])
     mock_evaluator.evaluate.assert_called_once_with("")
 
+def test__given_dict_in_value__when_evaluate_string__then_calls_evaluator_with_dict():
+    mock_evaluator = Mock(spec=AbstractEvaluator)
+    mock_evaluator.name.return_value = "mock"
+    _evaluate_string("${{mock.{} }}", [mock_evaluator])
+    mock_evaluator.evaluate.assert_called_once_with("{} ")
+
+
 def test__given_empty_dict__when_evaluate__then_no_error():
     conf = {}
     evaluate_conf(conf, [Mock(side_effect=Exception())])

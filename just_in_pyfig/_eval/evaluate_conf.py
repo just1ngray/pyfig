@@ -33,7 +33,7 @@ def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> Abs
         return candidate
 
 
-_TEMPLATE_PATTERN = re.compile(r"\$\{\{(?P<evaluator>[A-Za-z0-9_-]*)(\.(?P<value>[^}]*))?\}\}")
+_TEMPLATE_PATTERN = re.compile(r"\$\{\{(?P<evaluator>[A-Za-z0-9_-]*)(\.(?P<value>([^}]|\}[^}])*\}?))?\}\}")
 """
 A regular expression pattern that matches a template string.
 
