@@ -1,5 +1,5 @@
 import re
-from typing import Any, Optional, Collection
+from typing import Any, Optional, Collection, Union
 
 from .abstract_evaluator import AbstractEvaluator
 
@@ -37,21 +37,33 @@ def _evaluate_string(string: str, evaluators: Collection[AbstractEvaluator]) -> 
     )
 
 
-def evaluate_conf(conf: dict, evaluators: Collection[AbstractEvaluator]) -> None:
-    """
-    Evaluate the configuration dictionary in-place by replacing templated values
-    """
+def evaluate_conf(conf: Union[list, dict], evaluators: Collection[AbstractEvaluator]) -> None:
     changes = 1
 
     while changes > 0:
         changes = 0
 
-        for key, value in conf.items():
-            if isinstance(value, str):
-                new = _evaluate_string(value, evaluators)
-                if new != value:
-                    conf[key] = new
-                    changes += 1
+        if isinstance(conf, dict):
+            for key, value in conf.items():
+                if isinstance(value, str):
+                    new = _evaluate_string(value, evaluators)
+                    if new != value:
+                        conf[key] = new
+                        changes += 1
 
-            elif isinstance(value, dict):
-                evaluate_conf(value, evaluators)
+                elif isinstance(value, (dict, list)):
+                    evaluate_conf(value, evaluators)
+
+        elif isinstance(conf, list):
+            for i, item in enumerate(conf):
+                if isinstance(item, (dict, list)):
+                    evaluate_conf(item, evaluators)
+
+                elif isinstance(item, str):
+                    new = _evaluate_string(item, evaluators)
+                    if new != item:
+                        conf[i] = new
+                        changes += 1
+
+        else:
+            raise TypeError(f"Cannot evaluate conf of unknown type: {type(conf)}")

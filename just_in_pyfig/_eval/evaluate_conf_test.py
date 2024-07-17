@@ -157,7 +157,6 @@ def test__given_recursive_evaluator__when_evaluate_conf__then_evaluates_recursiv
     evaluate_conf(conf, [evaluator])
     assert conf == { "key": "Wow!" }
 
-
 def test__given_template_in_array__when_evaluate_conf__then_substitutes():
     conf = {
         "array": [
@@ -177,5 +176,21 @@ def test__given_template_in_array__when_evaluate_conf__then_substitutes():
                 "name": "tester",
                 "age": 99
             }
+        ]
+    }
+
+def test__given_nested_array__when_evaluate_conf__then_subsititutes_deeply():
+    conf = {
+        "array": [
+            [ "${var.item1}", "${var.item2}" ],
+            { "array": ["${var.deep}"] }
+        ]
+    }
+    evaluator = VariableEvaluator(item1=True, item2=False, deep=None)
+    evaluate_conf(conf, [evaluator])
+    assert conf == {
+        "array": [
+            [ True, False ],
+            { "array": [None] }
         ]
     }
