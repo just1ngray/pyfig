@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name="just_in_pyfig",
+    name="pyfig",
     version="0.1.0",
-    packages=["just_in_pyfig"],
+    packages=["pyfig"],
     install_requires=[
         "pydantic" # TODO be specific
     ],

@@ -101,7 +101,7 @@ class Metafig:
             "/some/other/path.json"
         ],
         "evaluators": {
-            "just_in_pyfig.VariableEvaluator": {
+            "pyfig.VariableEvaluator": {
                 "foo": "bar"
             }
         },
@@ -121,8 +121,8 @@ class Metafig:
     A list of evaluators that can be used to fill-in templated values in the configuration files.
 
     Recommended to always use, for their convienience. This can also be extended to meet your needs.
-        - just_in_pyfig.VariableEvaluator
-        - just_in_pyfig.EnvironmentEvaluator
+        - pyfig.VariableEvaluator
+        - pyfig.EnvironmentEvaluator
     """
 
     overrides: Dict[str, Any] = field(default_factory=dict)
