@@ -86,7 +86,7 @@ def _construct_evaluator(class_path: str, params: Dict[str, Any]):
         raise ImportError(f"Module exists but class {class_name} not found in {module_path}")
 
     if not issubclass(evaluator_class, AbstractEvaluator):
-        raise TypeError(f"{evaluator_class} is not a subclass of AbstractEvaluator")
+        raise TypeError(f"{evaluator_class} is not a subclass of {AbstractEvaluator.__name__}")
 
     return evaluator_class(**params)
 
