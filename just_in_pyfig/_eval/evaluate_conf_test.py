@@ -215,4 +215,3 @@ def test__given_recursive_array_templating__when_evaluate_conf__then_substitutes
             [ 3.14 ]
         ]
     }
-
