@@ -79,7 +79,7 @@ def test__given_empty_dict__when_evaluate__then_no_error():
     evaluate_conf(conf, [Mock(side_effect=Exception())])
     assert conf == {}
 
-def test__given_dict_with_no_strings__when_evaluate__then_no_changes():
+def test__given_dict_with_no_strings__when_evaluate_conf__then_no_changes():
     original_dict = {
         "key": 3.14,
         "key2": False,
@@ -91,13 +91,13 @@ def test__given_dict_with_no_strings__when_evaluate__then_no_changes():
     evaluate_conf(mutable_copy, [Mock(side_effect=Exception())])
     assert mutable_copy == original_dict
 
-def test__given_dict_with_one_string__when_evaluate__then_replaces_string():
+def test__given_dict_with_one_string__when_evaluate_conf__then_replaces_string():
     conf = { "key": "hello, ${var.name}!" }
     evaluator = VariableEvaluator(name="tester")
     evaluate_conf(conf, [evaluator])
     assert conf == { "key": "hello, tester!" }
 
-def test__given_dict_with_multiple_strings__when_evaluate__then_replaces_each_string():
+def test__given_dict_with_multiple_strings__when_evaluate_conf__then_replaces_each_string():
     conf = {
         "greeting": "hello, ${var.name}!",
         "farewell": "goodbye, ${var.name}!"
@@ -109,7 +109,7 @@ def test__given_dict_with_multiple_strings__when_evaluate__then_replaces_each_st
         "farewell": "goodbye, tester!"
     }
 
-def test__given_dict_with_nested_strings__when_evaluate__then_replaces_template_strings():
+def test__given_dict_with_nested_strings__when_evaluate_conf__then_replaces_template_strings():
     conf = {
         "nested": {
             "greeting": "hello, ${var.name}!",
@@ -144,3 +144,9 @@ def test__given_dict_with_nested_strings__when_evaluate__then_replaces_template_
             }
         }
     }
+
+def test__given_recursive_evaluator__when_evaluate_conf__then_evaluates_recursively():
+    evaluator = VariableEvaluator(prefix="${co", suffix="ol}", cool="Wow!")
+    conf = { "key": "${prefix}${suffix}" }
+    evaluate_conf(conf, [evaluator])
+    assert conf == { "key": "Wow!" }
