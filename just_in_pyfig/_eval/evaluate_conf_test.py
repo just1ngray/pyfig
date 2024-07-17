@@ -156,3 +156,26 @@ def test__given_recursive_evaluator__when_evaluate_conf__then_evaluates_recursiv
     conf = { "key": "${var.prefix}${var.suffix}" }
     evaluate_conf(conf, [evaluator])
     assert conf == { "key": "Wow!" }
+
+
+def test__given_template_in_array__when_evaluate_conf__then_substitutes():
+    conf = {
+        "array": [
+            "${var.item1}",
+            {
+                "name": "${var.name}",
+                "age": "${var.age}"
+            }
+        ]
+    }
+    evaluator = VariableEvaluator(item1=True, name="tester", age=99)
+    evaluate_conf(conf, [evaluator])
+    assert conf == {
+        "array": [
+            True,
+            {
+                "name": "tester",
+                "age": 99
+            }
+        ]
+    }
