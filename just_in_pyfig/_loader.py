@@ -36,9 +36,11 @@ def load_configuration(default: Type[T], *overrides: Dict) -> T:
     # find the default configuration
     conf = default().model_dump() # TODO: consider using 'serialize_as_any' kwarg
 
+    # unify the overrides into a single dict, with the first one taking precedence
+    unified_overrides = _unify_overrides(*overrides)
+
     # apply overrides
-    for override in overrides:
-        _apply_override_to_conf(conf, override)
+    _apply_override_to_conf(conf, unified_overrides)
 
     # evaluate ??
 
