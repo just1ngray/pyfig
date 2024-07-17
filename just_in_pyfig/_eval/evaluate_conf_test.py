@@ -40,19 +40,19 @@ def test__given_regular_string__when_evaluate_string__then_return_unmodified_str
 
 def test__given_full_string_template__when_evaluate_string__then_returns_evaluated_string():
     mock_evaluator = VariableEvaluator(mock="mocked")
-    assert _evaluate_string("${var.mock}", [mock_evaluator]) == "mocked"
+    assert _evaluate_string("${{var.mock}}", [mock_evaluator]) == "mocked"
 
 def test__given_substring_template__when_evaluate_string__then_substitutes_substring():
     mock_evaluator = VariableEvaluator(name="tester")
-    assert _evaluate_string("hello, ${var.name}!", [mock_evaluator]) == "hello, tester!"
+    assert _evaluate_string("hello, ${{var.name}}!", [mock_evaluator]) == "hello, tester!"
 
 def test__given_multiple_templates__when_evaluate_string__then_subsitutes_all_templates():
     mock_evaluator = VariableEvaluator(endpoint="localhost", port=8080, path="api")
-    assert _evaluate_string("GET ${var.endpoint}:${var.port}/${var.path}", [mock_evaluator]) == "GET localhost:8080/api"
+    assert _evaluate_string("GET ${{var.endpoint}}:${{var.port}}/${{var.path}}", [mock_evaluator]) == "GET localhost:8080/api"
 
 def test__given_same_template__when_evaluate_string__then_substitutes_each():
     mock_evaluator = VariableEvaluator(name="tester")
-    assert _evaluate_string("${var.name} ${var.name} ${var.name}", [mock_evaluator]) == "tester tester tester"
+    assert _evaluate_string("${{var.name}} ${{var.name}} ${{var.name}}", [mock_evaluator]) == "tester tester tester"
 
 @pytest.mark.parametrize("replacement", [
     False,
@@ -62,7 +62,7 @@ def test__given_same_template__when_evaluate_string__then_substitutes_each():
 ])
 def test__given_stringable_replacement_substring__when_evaluate_string__then_replaces_into_string(replacement):
     mock_evaluator = VariableEvaluator(repl=replacement)
-    assert _evaluate_string("replacement is ${var.repl}", [mock_evaluator]) == f"replacement is {replacement}"
+    assert _evaluate_string("replacement is ${{var.repl}}", [mock_evaluator]) == f"replacement is {replacement}"
 
 @pytest.mark.parametrize("replacement", [
     False,
@@ -72,12 +72,12 @@ def test__given_stringable_replacement_substring__when_evaluate_string__then_rep
 ])
 def test__given_full_non_string_replacement__when_evaluate_string__then_respects_type(replacement):
     mock_evaluator = VariableEvaluator(repl=replacement)
-    assert _evaluate_string("${var.repl}", [mock_evaluator]) == replacement
+    assert _evaluate_string("${{var.repl}}", [mock_evaluator]) == replacement
 
 def test__given_no_evaluation_args__when_evaluate_string__then_calls_evaluator_with_empty_string():
     mock_evaluator = Mock(spec=AbstractEvaluator)
     mock_evaluator.name.return_value = "mock"
-    _evaluate_string("${mock}", [mock_evaluator])
+    _evaluate_string("${{mock}}", [mock_evaluator])
     mock_evaluator.evaluate.assert_called_once_with("")
 
 def test__given_empty_dict__when_evaluate__then_no_error():
@@ -98,15 +98,15 @@ def test__given_dict_with_no_strings__when_evaluate_conf__then_no_changes():
     assert mutable_copy == original_dict
 
 def test__given_dict_with_one_string__when_evaluate_conf__then_replaces_string():
-    conf = { "key": "hello, ${var.name}!" }
+    conf = { "key": "hello, ${{var.name}}!" }
     evaluator = VariableEvaluator(name="tester")
     evaluate_conf(conf, [evaluator])
     assert conf == { "key": "hello, tester!" }
 
 def test__given_dict_with_multiple_strings__when_evaluate_conf__then_replaces_each_string():
     conf = {
-        "greeting": "hello, ${var.name}!",
-        "farewell": "goodbye, ${var.name}!"
+        "greeting": "hello, ${{var.name}}!",
+        "farewell": "goodbye, ${{var.name}}!"
     }
     evaluator = VariableEvaluator(name="tester")
     evaluate_conf(conf, [evaluator])
@@ -118,11 +118,11 @@ def test__given_dict_with_multiple_strings__when_evaluate_conf__then_replaces_ea
 def test__given_dict_with_nested_strings__when_evaluate_conf__then_replaces_template_strings():
     conf = {
         "nested": {
-            "greeting": "hello, ${var.name}!",
-            "farewell": "goodbye, ${var.name}!",
-            "age": "${var.age}"
+            "greeting": "hello, ${{var.name}}!",
+            "farewell": "goodbye, ${{var.name}}!",
+            "age": "${{var.age}}"
         },
-        "top": "${mock.subtree}"
+        "top": "${{mock.subtree}}"
     }
     mock_evaluator = Mock(spec=AbstractEvaluator)
     mock_evaluator.name.return_value = "mock"
@@ -152,18 +152,18 @@ def test__given_dict_with_nested_strings__when_evaluate_conf__then_replaces_temp
     }
 
 def test__given_recursive_evaluator__when_evaluate_conf__then_evaluates_recursively():
-    evaluator = VariableEvaluator(prefix="${var.", suffix="cool}", cool="Wow!")
-    conf = { "key": "${var.prefix}${var.suffix}" }
+    evaluator = VariableEvaluator(prefix="${{var.", suffix="cool}}", cool="Wow!")
+    conf = { "key": "${{var.prefix}}${{var.suffix}}" }
     evaluate_conf(conf, [evaluator])
     assert conf == { "key": "Wow!" }
 
 def test__given_template_in_array__when_evaluate_conf__then_substitutes():
     conf = {
         "array": [
-            "${var.item1}",
+            "${{var.item1}}",
             {
-                "name": "${var.name}",
-                "age": "${var.age}"
+                "name": "${{var.name}}",
+                "age": "${{var.age}}"
             }
         ]
     }
@@ -182,8 +182,8 @@ def test__given_template_in_array__when_evaluate_conf__then_substitutes():
 def test__given_nested_array__when_evaluate_conf__then_subsititutes_deeply():
     conf = {
         "array": [
-            [ "${var.item1}", "${var.item2}" ],
-            { "array": ["${var.deep}"] }
+            [ "${{var.item1}}", "${{var.item2}}" ],
+            { "array": ["${{var.deep}}"] }
         ]
     }
     evaluator = VariableEvaluator(item1=True, item2=False, deep=None)
@@ -199,13 +199,13 @@ def test__given_recursive_array_templating__when_evaluate_conf__then_substitutes
     mock_evaluator = Mock(spec=AbstractEvaluator)
     mock_evaluator.name.return_value = "mock"
     mock_evaluator.evaluate.return_value = [
-        "${var.item1}",
-        { "key": "${var.item2}" },
-        [ "${var.item3}" ]
+        "${{var.item1}}",
+        { "key": "${{var.item2}}" },
+        [ "${{var.item3}}" ]
     ]
     variable_evaluator = VariableEvaluator(item1=1, item2=2.0, item3=3.14)
 
-    conf = { "array": "${mock}" }
+    conf = { "array": "${{mock}}" }
     evaluate_conf(conf, [mock_evaluator, variable_evaluator])
 
     assert conf == {

@@ -33,19 +33,20 @@ def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> Abs
         return candidate
 
 
-_TEMPLATE_PATTERN = re.compile(r"\$\{(?P<evaluator>[A-Za-z0-9_-]*)(\.(?P<value>[^}]*))?\}")
+_TEMPLATE_PATTERN = re.compile(r"\$\{\{(?P<evaluator>[A-Za-z0-9_-]*)(\.(?P<value>[^}]*))?\}\}")
 """
 A regular expression pattern that matches a template string.
 
-A template (sub)string starts with a dollar sign ($) and is wrapped in curly braces ({}). It consists of two parts:
+A template (sub)string starts with a dollar sign ($) and is wrapped in double curly braces ({{}}).
+It consists of two parts:
 1. The evaluator name, which is a sequence of alphanumeric characters, underscores, and hyphens.
 2. The value, which is an optional sequence of characters that is separated from the evaluator name by a period.
    Note: the value can contain anything except double closing curly braces (}}). FIXME not true yet
 
 E.g.,
-    "${foo}" -> { "evaluator": "foo", "value": None }
-    "${foo.bar}" -> { "evaluator": "foo", "value": "bar" }
-    "some ${eval.val} string" -> { "evaluator": "eval", "value": "val" }
+    "${{foo}}" -> { "evaluator": "foo", "value": None }
+    "${{foo.bar}}" -> { "evaluator": "foo", "value": "bar" }
+    "some ${{eval.val}} string" -> { "evaluator": "eval", "value": "val" }
 """
 
 
