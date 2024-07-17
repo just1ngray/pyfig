@@ -142,3 +142,10 @@ def test__given_missing_module__when_construct_evaluator__then_raises_module_not
 def test__given_missing_class_in_known_module__when_construct_evaluator__then_raises_import_error():
     with pytest.raises(ImportError):
         _construct_evaluator("pyfig._metafig_test.ClassDoesNotExist", {})
+
+class NotEvaluator:
+    pass
+
+def test__given_class_path_to_bad_class__when_construct_evaluator__then_raises_type_error():
+    with pytest.raises(TypeError):
+        _construct_evaluator("pyfig._metafig_test.NotEvaluator", {})
