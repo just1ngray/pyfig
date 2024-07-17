@@ -1,4 +1,10 @@
+# development
+pylint
+
+# testing
 pytest
 pytest-sugar
+
+# full file format support
 pyyaml
 toml
