@@ -30,9 +30,11 @@ def test__given_evaluators__when_find_evaluator__then_returns_correct_evaluator(
 @pytest.mark.parametrize("string", [
     "",
     "hello, world!",
-    "${unmatched brace",
-    "{no dollar sign}",
-    "3.14"
+    "${{unmatched brace}",
+    "{{no dollar sign}}",
+    "3.14",
+    "${single brace only}",
+    "${custom.{} }"
 ])
 def test__given_regular_string__when_evaluate_string__then_return_unmodified_string(string: str):
     mock_evaluator = VariableEvaluator(mock="mocked")
