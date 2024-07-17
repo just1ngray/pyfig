@@ -194,3 +194,25 @@ def test__given_nested_array__when_evaluate_conf__then_subsititutes_deeply():
             { "array": [None] }
         ]
     }
+
+def test__given_recursive_array_templating__when_evaluate_conf__then_substitutes_properly():
+    mock_evaluator = Mock(spec=AbstractEvaluator)
+    mock_evaluator.name.return_value = "mock"
+    mock_evaluator.evaluate.return_value = [
+        "${var.item1}",
+        { "key": "${var.item2}" },
+        [ "${var.item3}" ]
+    ]
+    variable_evaluator = VariableEvaluator(item1=1, item2=2.0, item3=3.14)
+
+    conf = { "array": "${mock}" }
+    evaluate_conf(conf, [mock_evaluator, variable_evaluator])
+
+    assert conf == {
+        "array": [
+            1,
+            { "key": 2.0 },
+            [ 3.14 ]
+        ]
+    }
+
