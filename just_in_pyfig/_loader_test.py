@@ -156,7 +156,7 @@ class TestApplyOverrideToConf:
             "level": 3
         }
 
-    def test__given_nested_conf__when_override_nested_key_template__then_sets_as_template(self):
+    def test__given_nested_conf__when_override_nested_key_different_type__then_sets(self):
         conf = {
             "top": {
                 "a": 1,
@@ -165,11 +165,11 @@ class TestApplyOverrideToConf:
             "level": 3
         }
         override = {
-            "top": "template(self)"
+            "top": "different type"
         }
         _apply_override_to_conf(conf, override)
         assert conf == {
-            "top": "template(self)",
+            "top": "different type",
             "level": 3
         }
 
