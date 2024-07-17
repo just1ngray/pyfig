@@ -41,7 +41,7 @@ A template (sub)string starts with a dollar sign ($) and is wrapped in double cu
 It consists of two parts:
 1. The evaluator name, which is a sequence of alphanumeric characters, underscores, and hyphens.
 2. The value, which is an optional sequence of characters that is separated from the evaluator name by a period.
-   Note: the value can contain anything except double closing curly braces (}}). FIXME not true yet
+   Note: the value can contain anything except double closing curly braces (}}).
 
 E.g.,
     "${{foo}}" -> { "evaluator": "foo", "value": None }
