@@ -4,6 +4,7 @@ pylint
 # testing
 pytest
 pytest-sugar
+git+https://github.com/just1ngray/pytestdir.git
 
 # full file format support
 pyyaml
