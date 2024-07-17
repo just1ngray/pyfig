@@ -15,9 +15,7 @@ class HealthMonitorConfig(Pyfig):
 
 class ImportantTaskParamsConfig(Pyfig):
     timeout: int = 10
-    """Number of seconds to wait before timing out the request"""
     retries: int = 3
-    """Number of times to try the request before giving up"""
 
 class ImportantTaskConfig(Pyfig):
     enabled: bool = True
@@ -44,7 +42,7 @@ def get_config() -> ApplicationConfig:
     if not os.environ.get("EXAMPLE_API_KEY"):
         os.environ["EXAMPLE_API_KEY"] = "mocked api key"
 
-    loader = Metaconf.from_path("example/metaconf.yaml")
+    loader = Metaconf.from_path("metaconf.yaml")
     return loader.load_config(ApplicationConfig)
 
 

@@ -4,6 +4,17 @@ A Python configuration system that's powerful enough to meet complex requirement
 being simple enough so new contributors can confidently make changes without worrying how
 to get everything setup.
 
+## Features
+
+- 🏆 Heiarchical overrides
+- ✅ Validation powered by [pydantic](https://docs.pydantic.dev/latest/)
+- ✏️ Extensible templating for variables
+- 🚀 Type-annotated configuration classes
+- 🔎 Document your config using docstrings
+- 📦 Package config files with your application, and configure how to combine the configs
+
+Note: pyfig does not inherently support changes to the config at runtime.
+
 ## Installation
 
 ```shell
@@ -88,8 +99,59 @@ modules:
 
 ## How it Works
 
-...
+At its core, there are five levels to pyfig:
+
+1. Deserializing configuration overrides from files is handled by other libraries (json, yaml, etc.)
+2. Combine overrides by merging them in priority order
+3. Apply the (combined) overrides to the default config
+4. Evaluate string templates
+5. Convert & validate into a pydantic class tree for use by the application
+
+Basically, you give pyfig a class tree (with defaults), and a bunch of overriding dictionaries, and it
+will create your application's configuration by giving you back a pydantic-based class tree.
+
+Overrides are applied in priority order. A high priority override will always take prescedence over a
+low priority one. Combining all the overrides at once makes it easier later when we apply & template
+the config.
+
+Templates are string-based variables which allow you to separate config structure from contents. There
+are two modes:
+1. When a value contains a template substring, only the substring is replaced.
+    ```yaml
+    endpoint: http://${{var.host}}/api
+    ```
+    will use the [VariableEvaluator](./pyfig/_eval/variable_evaluator.py) to look for the value of `host`.
+    If `host` is defined as `localhost:8080`, then the config will evaluate to:
+    ```yaml
+    endpoint: http://localhost:8080/api
+    ```
+2. When a value is exactly one template string, the value itself is replaced.
+    ```yaml
+    endpoint: "${{var.endpoint}}"
+    ```
+    Could turn into something like:
+    ```yaml
+    endpoint:
+      host: localhost
+      port: 8080
+    ```
+
+Additionally, templates are evaluated recursively. This means that templates themselves can contain templates:
+```yaml
+# default value includes a template
+endpoint: ${{var.endpoint}}
+
+# which could be intermediately evaluated as
+endpoint:
+  host: ${{var.cluster}}
+  port: 80
+
+# and then finally, perhaps
+endpoint:
+  host: 255.255.255.255
+  port: 80
+```
 
 ## Metaconf
 
-...
+[Metaconf](./pyfig/_metaconf.py)

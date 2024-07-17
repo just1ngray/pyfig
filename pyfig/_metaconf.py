@@ -94,7 +94,7 @@ def _construct_evaluator(class_path: str, params: Dict[str, Any]):
 T = TypeVar("T", bound=Pyfig)
 
 @dataclass
-class Metafig:
+class Metaconf:
     """
     The recommended way to use Pyfig. This 'meta configuration' specifies how the application's configuration
     is loaded.
@@ -137,9 +137,9 @@ class Metafig:
     """
 
     @staticmethod
-    def from_path(path: Union[str, Path]) -> "Metafig":
+    def from_path(path: Union[str, Path]) -> "Metaconf":
         """
-        Constructs a Metafig, which is then capable of `load_config` to get your application's config.
+        Constructs a metaconf, which is then capable of `load_config` to get your application's config.
         """
         data = _load_dict(path) or {}
 
@@ -147,7 +147,7 @@ class Metafig:
         for evaluator, params in data.pop("evaluators", {}).items():
             evaluators.append(_construct_evaluator(evaluator, params))
 
-        return Metafig(evaluators=evaluators, **data)
+        return Metaconf(evaluators=evaluators, **data)
 
     def load_config(self, target: Type[T]) -> T:
         """

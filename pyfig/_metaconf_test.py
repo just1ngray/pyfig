@@ -7,7 +7,7 @@ import pytest
 
 from ._pyfig import Pyfig
 from ._eval import AbstractEvaluator
-from ._metafig import _load_dict, _construct_evaluator, Metafig
+from ._metaconf import _load_dict, _construct_evaluator, Metaconf
 
 
 @pytest.mark.parametrize("ext", ["yaml", "yml"])
@@ -134,7 +134,7 @@ class MockEvaluator(AbstractEvaluator):
 
 def test__given_class_path_and_params__when_construct_evaluator__then_evaluator_is_constructed():
     kwargs = {"param": "value", "other": 1}
-    result = _construct_evaluator("pyfig._metafig_test.MockEvaluator", kwargs)
+    result = _construct_evaluator("pyfig._metaconf_test.MockEvaluator", kwargs)
     assert isinstance(result, MockEvaluator)
     assert result.kwargs == kwargs
 
@@ -144,22 +144,22 @@ def test__given_missing_module__when_construct_evaluator__then_raises_module_not
 
 def test__given_missing_class_in_known_module__when_construct_evaluator__then_raises_import_error():
     with pytest.raises(ImportError):
-        _construct_evaluator("pyfig._metafig_test.ClassDoesNotExist", {})
+        _construct_evaluator("pyfig._metaconf_test.ClassDoesNotExist", {})
 
 class NotEvaluator:
     pass
 
 def test__given_class_path_to_bad_class__when_construct_evaluator__then_raises_type_error():
     with pytest.raises(TypeError):
-        _construct_evaluator("pyfig._metafig_test.NotEvaluator", {})
+        _construct_evaluator("pyfig._metaconf_test.NotEvaluator", {})
 
-def test__given_metafig_config__when_metafig_from_path__then_initialized_properly(pytestdir: Path):
+def test__given_metaconf_config__when_metaconf_from_path__then_initialized_properly(pytestdir: Path):
     override = pytestdir.joinpath("override.yaml").as_posix()
 
     path = pytestdir / "metaconf.yaml"
     path.write_text(textwrap.dedent(f"""\
         evaluators:
-            pyfig._metafig_test.MockEvaluator:
+            pyfig._metaconf_test.MockEvaluator:
                 param: value
                 other: 1
             pyfig.VariableEvaluator:
@@ -172,32 +172,32 @@ def test__given_metafig_config__when_metafig_from_path__then_initialized_properl
             key: value
     """), encoding="utf-8")
 
-    metaconf = Metafig.from_path(path)
+    metaconf = Metaconf.from_path(path)
 
-    assert isinstance(metaconf, Metafig)
+    assert isinstance(metaconf, Metaconf)
     assert metaconf.configs == [override]
     assert metaconf.overrides == {"key": "value"}
     assert len(metaconf.evaluators) == 2
     for evaluator in metaconf.evaluators:
         assert isinstance(evaluator, AbstractEvaluator)
 
-def test__given_missing_metafig_path__when_metafig_from_path__then_raises_file_not_found_error(pytestdir: Path):
+def test__given_missing_metaconf_path__when_metaconf_from_path__then_raises_file_not_found_error(pytestdir: Path):
     with pytest.raises(FileNotFoundError):
-        Metafig.from_path(pytestdir / "does_not_exist.yaml")
+        Metaconf.from_path(pytestdir / "does_not_exist.yaml")
 
-def test__given_empty_metafig__when_metafig_from_path__then_creates_default(pytestdir: Path):
+def test__given_empty_metaconf__when_metaconf_from_path__then_creates_default(pytestdir: Path):
     path = pytestdir / "empty.yaml"
     path.touch()
 
-    metaconf = Metafig.from_path(path)
-    default = Metafig()
+    metaconf = Metaconf.from_path(path)
+    default = Metaconf()
 
-    assert isinstance(metaconf, Metafig)
+    assert isinstance(metaconf, Metaconf)
     assert metaconf.evaluators == default.evaluators
     assert metaconf.configs == default.configs
     assert metaconf.overrides == default.overrides
 
-def test__given_metafig__when_load_config__then_loads_files_and_calls_load_configuration(pytestdir: Path):
+def test__given_metaconf__when_load_config__then_loads_files_and_calls_load_configuration(pytestdir: Path):
     class TargetConf(Pyfig):
         a: int = 1
         b: str = "bee"
@@ -207,13 +207,13 @@ def test__given_metafig__when_load_config__then_loads_files_and_calls_load_confi
     override_path.write_text('{ "a": 10 }', encoding="utf-8")
     configs = [override_path.as_posix()]
 
-    metafig = Metafig(
+    metaconf = Metaconf(
         configs=configs,
         evaluators=[MockEvaluator()],
         overrides={ "b": "bear" }
     )
 
-    result = metafig.load_config(TargetConf)
+    result = metaconf.load_config(TargetConf)
 
     assert isinstance(result, TargetConf)
     assert result.a == 10
