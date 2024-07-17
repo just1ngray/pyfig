@@ -1,4 +1,4 @@
-from typing import Type, TypeVar, Dict
+from typing import Type, TypeVar, Dict, Iterable
 
 from ._pyfig import Pyfig
 
@@ -54,12 +54,12 @@ def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> None:
             conf[key] = value
 
 
-def load_configuration(default: Type[T], *overrides: Dict) -> T:
+def load_configuration(default: Type[T], overrides: Iterable[Dict]) -> T:
     """
     TODO
     """
     conf = default().model_dump() # TODO: consider using 'serialize_as_any' kwarg
-    unified_overrides = _unify_overrides(*overrides)
+    unified_overrides = _unify_overrides(*list(overrides))
     _apply_override_to_conf(conf, unified_overrides)
 
     # evaluate ??
