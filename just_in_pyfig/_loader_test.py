@@ -107,13 +107,13 @@ class TestApplyOverrideToConf:
     def test__given_empty_dict__when_override_with_stuff__then_raises_key_error(self):
         empty_dict = {}
         override = { "a": 1 }
-        with pytest.raises(KeyError):
+        with pytest.raises(KeyError, match=r"Unknown key 'a' in override \(root\)"):
             _apply_override_to_conf(empty_dict, override)
 
-    def test__given_dict_with_stuff__when_override_with_unknown_stuff__then_raises_key_error(self):
+    def test__given_flat_dict__when_override_with_unknown_stuff__then_raises_key_error(self):
         conf = { "a": 1 }
         override = { "b": 2 }
-        with pytest.raises(KeyError):
+        with pytest.raises(KeyError, match=r"Unknown key 'b' in override \(root\)"):
             _apply_override_to_conf(conf, override)
 
     def test__given_single_key_dict__when_override_that_key__then_mutates_dict_with_override(self):
@@ -172,3 +172,20 @@ class TestApplyOverrideToConf:
             "top": "template(self)",
             "level": 3
         }
+
+    def test__given_nested_conf__when_override_unknown_nested_key__then_raises_key_error(self):
+        conf = {
+            "top": {
+                "a": 1,
+                "b": 2
+            },
+            "level": 3
+        }
+        override = {
+            "top": {
+                "foo": 100
+            }
+        }
+        with pytest.raises(KeyError, match=r"Unknown key 'foo' in override \(root.top\)"):
+            _apply_override_to_conf(conf, override)
+

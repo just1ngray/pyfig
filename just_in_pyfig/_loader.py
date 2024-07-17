@@ -29,7 +29,7 @@ def _unify_overrides(*overrides: Dict) -> Dict:
     return unified
 
 
-def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> None:
+def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="root") -> None:
     """
     Using a base configuration, applies an override to it.
 
