@@ -41,8 +41,17 @@ def evaluate_conf(conf: dict, evaluators: Collection[AbstractEvaluator]) -> None
     """
     Evaluate the configuration dictionary in-place by replacing templated values
     """
-    for key, value in conf.items():
-        if isinstance(value, str):
-            conf[key] = _evaluate_string(value, evaluators)
-        elif isinstance(value, dict):
-            evaluate_conf(value, evaluators)
+    changes = 1
+
+    while changes > 0:
+        changes = 0
+
+        for key, value in conf.items():
+            if isinstance(value, str):
+                new = _evaluate_string(value, evaluators)
+                if new != value:
+                    conf[key] = new
+                    changes += 1
+
+            elif isinstance(value, dict):
+                evaluate_conf(value, evaluators)
