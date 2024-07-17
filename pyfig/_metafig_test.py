@@ -1,8 +1,11 @@
 import textwrap
 from pathlib import Path
+from unittest.mock import patch, Mock
+from typing import List
 
 import pytest
 
+from ._pyfig import Pyfig
 from ._eval import AbstractEvaluator
 from ._metafig import _load_dict, _construct_evaluator, Metafig
 
@@ -193,3 +196,26 @@ def test__given_empty_metafig__when_metafig_from_path__then_creates_default(pyte
     assert metaconf.evaluators == default.evaluators
     assert metaconf.configs == default.configs
     assert metaconf.overrides == default.overrides
+
+def test__given_metafig__when_load_config__then_loads_files_and_calls_load_configuration(pytestdir: Path):
+    class TargetConf(Pyfig):
+        a: int = 1
+        b: str = "bee"
+        c: float = 3.14
+
+    override_path = pytestdir / "override.json"
+    override_path.write_text('{ "a": 10 }', encoding="utf-8")
+    configs = [override_path.as_posix()]
+
+    metafig = Metafig(
+        configs=configs,
+        evaluators=[MockEvaluator()],
+        overrides={ "b": "bear" }
+    )
+
+    result = metafig.load_config(TargetConf)
+
+    assert isinstance(result, TargetConf)
+    assert result.a == 10
+    assert result.b == "bear"
+    assert result.c == 3.14
