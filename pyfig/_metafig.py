@@ -80,8 +80,10 @@ def _construct_evaluator(class_path: str, params: Dict[str, Any]):
     Construct an evaluator from its name and parameters.
     """
     module_path, class_name = class_path.rsplit(".", 1)
-    module = importlib.import_module(module_path) # TODO: create a better error message!
-    evaluator_class = getattr(module, class_name)
+    module = importlib.import_module(module_path)
+    evaluator_class = getattr(module, class_name, None)
+    if evaluator_class is None:
+        raise ImportError(f"Module exists but class {class_name} not found in {module_path}")
 
     if not issubclass(evaluator_class, AbstractEvaluator):
         raise TypeError(f"{evaluator_class} is not a subclass of AbstractEvaluator")
