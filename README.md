@@ -154,4 +154,28 @@ endpoint:
 
 ## Metaconf
 
-[Metaconf](./pyfig/_metaconf.py)
+[Metaconf](./pyfig/_metaconf.py) is the recommended approach for using pyfig. It is *not* required, so you
+are welcome to design your own approach for loading and creating your application's config, and still call
+the coordinating `load_configuration()` pyfig function ([src](./pyfig/_loader.py)).
+
+The idea behind Metaconf is to bundle all overriding configuration dimensions into your application's image.
+Application implementations change frequently - requiring adjustments to the deployed configuration, but by
+contrast the general objectives of configuration are much more static. Metaconf describes the objectives of
+the configuration, and references config files more closely bundled with the application.
+
+Sometimes a relevant config file may not exist, and in that case the `overrides` section can be used directly
+inside Metaconf to provide top-level overrides to the application's config.
+
+To effectively use metaconf:
+
+1. Create a separate config file for each dimension of your software's configuration. You can reduce the
+   number of files by choosing reasonable defaults for your default config. E.g., `dev` mode is default,
+   and then you have overriding files for each of `staging` and `prod`. Your application may have different
+   modes, hardware, environments, etc. Typically identifying the dimensions is simple
+2. When building your application's image (or other deployment model), include all config files, even if
+   they are typically unused
+3. Define one or more Metaconf configuration files which provide instructions on how to configure the
+   application for each execution model. Try to use [environment] variables to reduce the number of
+   device-specific changes required
+4. Now, deploy a Metaconf to your device(s) and watch as the configuration is built using the defined
+   overrides.
