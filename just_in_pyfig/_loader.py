@@ -55,13 +55,11 @@ def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> None:
 
 
 def load_configuration(default: Type[T], *overrides: Dict) -> T:
-    # find the default configuration
+    """
+    TODO
+    """
     conf = default().model_dump() # TODO: consider using 'serialize_as_any' kwarg
-
-    # unify the overrides into a single dict, with the first one taking precedence
     unified_overrides = _unify_overrides(*overrides)
-
-    # apply overrides
     _apply_override_to_conf(conf, unified_overrides)
 
     # evaluate ??
