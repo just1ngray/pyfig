@@ -29,6 +29,6 @@ class EvaluationError(Exception):
     A base exception type for when a string evaluation fails.
     """
     def __init__(self, evaluator: AbstractEvaluator, value: str):
-        super().__init__(f"Failed to evaluate '{value}' with evaluator '{evaluator.name()}'")
+        super().__init__(f"Failed to evaluate '{value}' with evaluator '{evaluator.name()}' ({type(evaluator)})")
         self._evaluator = evaluator
         self._value = value
