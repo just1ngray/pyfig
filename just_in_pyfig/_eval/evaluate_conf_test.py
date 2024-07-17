@@ -1,3 +1,4 @@
+from copy import deepcopy
 from unittest.mock import Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from just_in_pyfig._eval.abstract_evaluator import AbstractEvaluator
 
 from .variable_evaluator import VariableEvaluator
-from .evaluate_conf import _find_evaluator, _evaluate_string
+from .evaluate_conf import _find_evaluator, _evaluate_string, evaluate_conf
 
 
 def test__given_evaluators__when_find_evaluator_with_missing_evaluator__then_raises_value_error():
@@ -72,3 +73,74 @@ def test__given_stringable_replacement_substring__when_evaluate_string__then_rep
 def test__given_full_non_string_replacement__when_evaluate_string__then_respects_type(replacement):
     mock_evaluator = VariableEvaluator(repl=replacement)
     assert _evaluate_string("${var.repl}", [mock_evaluator]) == replacement
+
+def test__given_empty_dict__when_evaluate__then_no_error():
+    conf = {}
+    evaluate_conf(conf, [Mock(side_effect=Exception())])
+    assert conf == {}
+
+def test__given_dict_with_no_strings__when_evaluate__then_no_changes():
+    original_dict = {
+        "key": 3.14,
+        "key2": False,
+        "key3": {
+            "nested": 17
+        }
+    }
+    mutable_copy = deepcopy(original_dict)
+    evaluate_conf(mutable_copy, [Mock(side_effect=Exception())])
+    assert mutable_copy == original_dict
+
+def test__given_dict_with_one_string__when_evaluate__then_replaces_string():
+    conf = { "key": "hello, ${var.name}!" }
+    evaluator = VariableEvaluator(name="tester")
+    evaluate_conf(conf, [evaluator])
+    assert conf == { "key": "hello, tester!" }
+
+def test__given_dict_with_multiple_strings__when_evaluate__then_replaces_each_string():
+    conf = {
+        "greeting": "hello, ${var.name}!",
+        "farewell": "goodbye, ${var.name}!"
+    }
+    evaluator = VariableEvaluator(name="tester")
+    evaluate_conf(conf, [evaluator])
+    assert conf == {
+        "greeting": "hello, tester!",
+        "farewell": "goodbye, tester!"
+    }
+
+def test__given_dict_with_nested_strings__when_evaluate__then_replaces_template_strings():
+    conf = {
+        "nested": {
+            "greeting": "hello, ${var.name}!",
+            "farewell": "goodbye, ${var.name}!",
+            "age": "${var.age}"
+        },
+        "top": "${mock.subtree}"
+    }
+    mock_evaluator = Mock(spec=AbstractEvaluator)
+    mock_evaluator.name.return_value = "mock"
+    mock_evaluator.evaluate.return_value = {
+        "deeply": {
+            "nested": {
+                "stuff": 1.0
+            }
+        }
+    }
+    variable_evaluator = VariableEvaluator(name="tester", age=99)
+
+    evaluate_conf(conf, [mock_evaluator, variable_evaluator])
+    assert conf == {
+        "nested": {
+            "greeting": "hello, tester!",
+            "farewell": "goodbye, tester!",
+            "age": 99
+        },
+        "top": {
+            "deeply": {
+                "nested": {
+                    "stuff": 1.0
+                }
+            }
+        }
+    }

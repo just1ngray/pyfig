@@ -1,10 +1,10 @@
 import re
-from typing import Any, Iterable, Optional
+from typing import Any, Optional, Collection
 
 from .abstract_evaluator import AbstractEvaluator
 
 
-def _find_evaluator(name: str, evaluators: Iterable[AbstractEvaluator]) -> AbstractEvaluator:
+def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> AbstractEvaluator:
     candidate: Optional[AbstractEvaluator] = None
 
     for evaluator in evaluators:
@@ -23,7 +23,7 @@ def _find_evaluator(name: str, evaluators: Iterable[AbstractEvaluator]) -> Abstr
 _TEMPLATE_PATTERN = re.compile(r"\$\{(?P<evaluator>[A-Za-z0-9_-]*)\.(?P<value>[^}]*)\}")
 
 
-def _evaluate_string(string: str, evaluators: Iterable[AbstractEvaluator]) -> Any:
+def _evaluate_string(string: str, evaluators: Collection[AbstractEvaluator]) -> Any:
     # if the entire string is a template, evaluate it and keep the type
     if full_match := _TEMPLATE_PATTERN.fullmatch(string):
         evaluator = _find_evaluator(full_match.group("evaluator"), evaluators)
@@ -37,8 +37,12 @@ def _evaluate_string(string: str, evaluators: Iterable[AbstractEvaluator]) -> An
     )
 
 
-def evaluate(conf: dict) -> dict:
+def evaluate_conf(conf: dict, evaluators: Collection[AbstractEvaluator]) -> None:
     """
-    Evaluate the configuration dictionary by replacing templated values
+    Evaluate the configuration dictionary in-place by replacing templated values
     """
-    return conf
+    for key, value in conf.items():
+        if isinstance(value, str):
+            conf[key] = _evaluate_string(value, evaluators)
+        elif isinstance(value, dict):
+            evaluate_conf(value, evaluators)
