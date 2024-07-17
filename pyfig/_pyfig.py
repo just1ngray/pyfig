@@ -3,7 +3,10 @@ from pydantic import BaseModel
 
 class Pyfig(BaseModel):
     """
-    TODO
+    The base class for all Pyfig configurations. It's basically just a Pydantic model that requires
+    all fields to have a default value.
+
+    See: https://docs.pydantic.dev/latest/api/base_model/ for more information on validation, serialization, etc.
     """
 
     @classmethod
