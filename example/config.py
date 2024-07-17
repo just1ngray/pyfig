@@ -1,7 +1,6 @@
 import os
 from enum import Enum
 
-from pydantic import Field
 from pyfig import Pyfig, Metafig
 
 
@@ -14,11 +13,15 @@ class HealthMonitorConfig(Pyfig):
     enabled: bool = False
     interval_seconds: int = 30
 
+class ImportantTaskParamsConfig(Pyfig):
+    timeout: int = 10
+    retries: int = 3
+
 class ImportantTaskConfig(Pyfig):
     enabled: bool = True
     resource: str = "http://localhost:8080/api"
     api_key: str = "${{env.EXAMPLE_API_KEY}}"
-    params: dict = Field(default_factory=dict)
+    params: ImportantTaskParamsConfig = ImportantTaskParamsConfig()
 
 class ModulesConfig(Pyfig):
     health_monitor: HealthMonitorConfig = HealthMonitorConfig()

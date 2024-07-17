@@ -6,6 +6,7 @@ evaluators:
   pyfig.EnvironmentEvaluator: {}
 
 configs:
+  - configs/special_mode.yml
   - configs/do_health_check.json
   - configs/prod.yaml
 
