@@ -11,7 +11,7 @@ to get everything setup.
 - ✏️ Extensible templating for variables
 - 🚀 Type-annotated configuration classes
 - 🔎 Document your config using docstrings
-- 📦 Package config files with your application, and configure how to combine the configs
+- 📦 Package config files with your application, then configure how to combine the configs
 
 Note: pyfig does not inherently support changes to the config at runtime.
 
