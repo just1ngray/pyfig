@@ -29,7 +29,20 @@ def _unify_overrides(*overrides: Dict) -> Dict:
     return unified
 
 
-def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> Dict:
+def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> None:
+    """
+    Using a base configuration, applies an override to it.
+
+    The override is applied at the lowest possible dictionary-key level.
+
+    Args:
+        conf:       the base configuration
+        override:   the override to apply
+        trace:      the current trace of the configuration
+
+    Returns:
+        None (mutates `conf` in place)
+    """
     for key, value in override.items():
         if key not in conf:
             # TODO: consider logging a warning instead depending on some argument
@@ -39,8 +52,6 @@ def _apply_override_to_conf(conf: Dict, override: Dict, trace: str="") -> Dict:
             _apply_override_to_conf(conf[key], value, trace=f"{trace}.{key}")
         else:
             conf[key] = value
-
-    return conf
 
 
 def load_configuration(default: Type[T], *overrides: Dict) -> T:
