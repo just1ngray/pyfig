@@ -141,17 +141,13 @@ class Metafig:
         """
         Constructs a Metafig, which is then capable of `load_config` to get your application's config.
         """
-        data = _load_dict(path)
+        data = _load_dict(path) or {}
 
         evaluators: List[AbstractEvaluator] = []
-        for evaluator, params in data["evaluators"].items():
+        for evaluator, params in data.pop("evaluators", {}).items():
             evaluators.append(_construct_evaluator(evaluator, params))
 
-        return Metafig(
-            configs=data["configs"],
-            evaluators=evaluators,
-            overrides=data["overrides"],
-        )
+        return Metafig(evaluators=evaluators, **data)
 
     def load_config(self, target: Type[T]) -> T:
         """
