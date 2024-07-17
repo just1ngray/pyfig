@@ -6,6 +6,17 @@ from ._pyfig import Pyfig
 T = TypeVar("T", bound=Pyfig)
 
 def _unify_overrides(*overrides: Dict) -> Dict:
+    """
+    Configuration overrides are unified by merging them together at a dictionary-key level. This means that if a key
+    is present in multiple overrides, the last one will take precedence. Overrides are always performed at the lowest
+    dictionary level possible.
+
+    Args:
+        overrides: descending order of precedence
+
+    Returns:
+        the unified override dictionary
+    """
     unified = {}
 
     for override in reversed(overrides):
