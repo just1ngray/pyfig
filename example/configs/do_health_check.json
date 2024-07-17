@@ -1,0 +1,7 @@
+{
+    "modules": {
+        "health_monitor": {
+            "enabled": true
+        }
+    }
+}

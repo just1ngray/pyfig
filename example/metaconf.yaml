@@ -1,0 +1,13 @@
+evaluators:
+  pyfig.VariableEvaluator:
+    protocol: https
+    host: production.example.com
+    port: ""
+  pyfig.EnvironmentEvaluator: {}
+
+configs:
+  - configs/do_health_check.json
+  - configs/prod.yaml
+
+overrides:
+  name: "Production Application"
