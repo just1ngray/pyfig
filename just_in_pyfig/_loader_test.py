@@ -186,6 +186,6 @@ class TestApplyOverrideToConf:
                 "foo": 100
             }
         }
-        with pytest.raises(KeyError, match=r"Unknown key 'foo' in override \(root.top\)"):
+        with pytest.raises(KeyError, match=r"Unknown key 'foo' in override \(.top\)"):
             _apply_override_to_conf(conf, override)
 
