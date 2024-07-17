@@ -39,8 +39,6 @@ def apply_overrides(conf: Dict, override: Dict, trace: str="") -> None:
     Returns:
         None (mutates `conf` in place)
     """
-    print("+", trace, type(conf), type(override))
-
     for key, value in override.items():
         if key not in conf:
             # TODO: consider logging a warning instead depending on some argument
