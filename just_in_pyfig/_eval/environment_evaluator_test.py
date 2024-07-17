@@ -16,4 +16,3 @@ def test__given_environment_evaluator__when_env_value_is_set__then_returns_that_
     evaluator = EnvironmentEvaluator()
 
     assert evaluator.evaluate(env) == val
-
