@@ -77,7 +77,18 @@ def _evaluate_string(string: str, evaluators: Collection[AbstractEvaluator]) -> 
 
 def evaluate_conf(conf: Union[list, dict], evaluators: Collection[AbstractEvaluator]) -> None:
     """
-    TODO
+    Recursively evaluates all (present+future) templates in `conf` using the provided `evaluators`
+
+    Substrings matching `${{evaluator.value}}` are interpolated in-place. Strings fully matching
+    `${{evaluator.value}}` are replaced with the evaluator's evaluation. This is done repeatedly
+    until no more templates exist, which means templates can exist within templates.
+
+    Args:
+        conf:        the configuration to search and evaluate templates
+        evaluators:  the collection of evaluators to use (i.e., how to evaluate the templates)
+
+    Returns:
+        None (conf is modified in-place)
     """
     changes = 1
 
