@@ -16,6 +16,7 @@ def _load_dict_from_yaml(path: Union[str, Path]) -> Dict[str, Any]:
     Load a YAML file from a path.
     """
     try:
+        # pylint: disable=import-outside-toplevel
         import yaml
     except ImportError:
         raise ImportError("Please install pyyaml to load YAML files.") from None
@@ -37,9 +38,11 @@ def _load_dict_from_toml(path: Union[str, Path]) -> Dict[str, Any]:
     Load a TOML file from a path.
     """
     try:
+        # pylint: disable=import-outside-toplevel
         import toml
     except ImportError:
         try:
+            # pylint: disable=import-outside-toplevel
             import tomli as toml
         except ImportError:
             raise ImportError("Please install toml or tomli to load TOML files.") from None
