@@ -10,7 +10,7 @@ worrying how to get everything setup.
 - ✅ Validation powered by [pydantic](https://docs.pydantic.dev/latest/)
 - 📝 Extensible templating for variables
 - 🛠️ Types, defaults, validation, and docs: all in one place directly in your code
-- 📦 Package config files with your application, then configure how to combine the configs
+- 📦 Package configuration files with your application and define how they are merged
 
 Note: pyfig does not inherently support changes to the config at runtime.
 
