@@ -78,7 +78,7 @@ modules:
       retries: 3
 ```
 
-into a config ready for use by the application:
+into a config ready to be used by the application:
 
 ```yaml
 name: Production Application
@@ -101,21 +101,18 @@ modules:
 
 At its core, there are five levels to pyfig:
 
-1. Deserializing configuration overrides from files is handled by other libraries (json, yaml, etc.)
-2. Combine overrides by merging them in priority order
-3. Apply the (combined) overrides to the default config
-4. Evaluate string templates
-5. Convert & validate into a pydantic class tree for use by the application
-
-Basically, you give pyfig a class tree (with defaults), and a bunch of overriding dictionaries, and it
-will create your application's configuration by giving you back a pydantic-based class tree.
+1. Deserializing configuration overrides from files: handled by other libraries (json, yaml, etc.)
+2. Combining configuration overrides by merging them in priority order
+3. Appling the (combined) overrides to the default config
+4. Recursively evaluating string templates
+5. Converting & validating the final pydantic class tree
 
 Overrides are applied in priority order. A high priority override will always take precedence over a
 low priority one. Combining all the overrides at once makes it easier later when we apply & template
 the config.
 
-Templates are string-based variables which allow you to separate config structure from contents. There
-are two modes:
+Templates are string-based variables which allow you to substitute values directly into the config.
+There are two primary modes:
 1. When a value contains a template substring, only the substring is replaced.
     ```yaml
     endpoint: http://${{var.host}}/api
@@ -136,7 +133,7 @@ are two modes:
       port: 8080
     ```
 
-Additionally, templates are evaluated recursively. This means that templates themselves can contain templates:
+Since templates are evaluated recursively, they can contain templates themselves:
 ```yaml
 # default value includes a template
 endpoint: ${{var.endpoint}}
@@ -146,7 +143,7 @@ endpoint:
   host: ${{var.cluster}}
   port: 80
 
-# and then finally, perhaps
+# and finally, perhaps
 endpoint:
   host: 255.255.255.255
   port: 80
@@ -158,24 +155,30 @@ endpoint:
 are welcome to design your own approach for loading and creating your application's config, and still call
 the coordinating `load_configuration()` pyfig function ([src](./pyfig/_loader.py)).
 
-The idea behind Metaconf is to bundle all overriding configuration dimensions into your application's image.
-Application implementations change frequently - requiring adjustments to the deployed configuration, but by
-contrast the general objectives of configuration are much more static. Metaconf describes the objectives of
-the configuration, and references config files more closely bundled with the application.
+The idea behind Metaconf is to bundle all overriding configuration settings into your application's image.
+While application implementations (and therefore configs) are prone to changing frequently, the general
+objectives for configuration are much more static. Metaconf describes the objectives of the configuration,
+and references config files more closely bundled with the application.
+
+Overall this reduces the number of times your application breaks because it received a bad configuration.
+You no longer need to be as worried about synchronizing software and configuration deployments, if they're
+traditionally handled separately.
 
 Sometimes a relevant config file may not exist, and in that case the `overrides` section can be used directly
 inside Metaconf to provide top-level overrides to the application's config.
 
 To effectively use metaconf:
 
-1. Create a separate config file for each dimension of your software's configuration. You can reduce the
-   number of files by choosing reasonable defaults for your default config. E.g., `dev` mode is default,
-   and then you have overriding files for each of `staging` and `prod`. Your application may have different
-   modes, hardware, environments, etc. Typically identifying the dimensions is simple
-2. When building your application's image (or other deployment model), include all config files, even if
-   they are typically unused
-3. Define one or more Metaconf configuration files which provide instructions on how to configure the
-   application for each execution model. Try to use [environment] variables to reduce the number of
-   device-specific changes required
-4. Now, deploy a Metaconf to your device(s) and watch as the configuration is built using the defined
-   overrides.
+1. Create an overriding config file which handles an objective by overriding a group of config settings.
+  > E.g., dev vs. staging vs. prod. Differing hardware. Different environments. Etc.
+  > Choosing reasonable default values can eliminate the need for so many overrides.
+
+2. When packaging your application (e.g., building the docker image), be sure to include all config files.
+
+3. Define one or more metaconf configuration files that combine configuration objectives into a hierarchy.
+  > Tip: Make use of the templating feature in order to avoid so much duplication. If needed, write your
+  > own custom evaluators.
+
+4. Deploy the appropriate metaconf to your device(s)/pod(s)/etc.
+  > Assuming configuration objectives remain constant, you may not have to make a metaconf deployment for
+  > quite some time, because all necessary config changes are bundled into the application layer
