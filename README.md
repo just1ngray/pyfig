@@ -6,11 +6,10 @@ worrying how to get everything setup.
 
 ## Features
 
-- 🏆 Hierarchical overrides
+- 📂 Hierarchical overrides
 - ✅ Validation powered by [pydantic](https://docs.pydantic.dev/latest/)
-- ✏️ Extensible templating for variables
-- 🚀 Type-annotated configuration classes
-- 🔎 Document your config using docstrings
+- 📝 Extensible templating for variables
+- 🛠️ Types, defaults, validation, and docs: all in one place directly in your code
 - 📦 Package config files with your application, then configure how to combine the configs
 
 Note: pyfig does not inherently support changes to the config at runtime.
