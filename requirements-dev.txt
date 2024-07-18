@@ -1,0 +1,12 @@
+# development
+pylint
+
+# testing
+pytest
+pytest-sugar
+pytest-cov
+git+https://github.com/just1ngray/pytestdir.git
+
+# full file format support
+pyyaml
+toml
