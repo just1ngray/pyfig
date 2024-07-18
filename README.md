@@ -64,7 +64,13 @@ This config turns the example default config:
 ```yaml
 name: My Application
 version: 0.1.0
-log_level: DEBUG
+logging:
+  stdout:
+    enabled: false
+    level: INFO
+  stderr:
+    enabled: true
+    level: DEBUG
 modules:
   health_monitor:
     enabled: false
@@ -83,7 +89,13 @@ into a config ready to be used by the application:
 ```yaml
 name: Production Application
 version: 0.1.0
-log_level: INFO
+logging:
+  stdout:
+    enabled: false
+    level: INFO
+  stderr:
+    enabled: true
+    level: DEBUG
 modules:
   health_monitor:
     enabled: true

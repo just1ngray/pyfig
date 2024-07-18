@@ -9,6 +9,14 @@ class LogLevel(Enum):
     INFO = "INFO"
     ERROR = "ERROR"
 
+class LoggingStreamConfig(Pyfig):
+    enabled: bool = True
+    level: LogLevel = LogLevel.INFO
+
+class LoggingConfig(Pyfig):
+    stdout: LoggingStreamConfig = LoggingStreamConfig(enabled=False)
+    stderr: LoggingStreamConfig = LoggingStreamConfig(level=LogLevel.DEBUG)
+
 class HealthMonitorConfig(Pyfig):
     enabled: bool = False
     interval_seconds: int = 30
@@ -35,7 +43,7 @@ class ApplicationConfig(Pyfig):
     """
     name: str = "My Application"
     version: str = "0.1.0"
-    log_level: LogLevel = LogLevel.DEBUG
+    logging: LoggingConfig = LoggingConfig()
     modules: ModulesConfig = ModulesConfig()
 
 
