@@ -6,7 +6,7 @@ to get everything setup.
 
 ## Features
 
-- 🏆 Heiarchical overrides
+- 🏆 Hierarchical overrides
 - ✅ Validation powered by [pydantic](https://docs.pydantic.dev/latest/)
 - ✏️ Extensible templating for variables
 - 🚀 Type-annotated configuration classes
@@ -110,7 +110,7 @@ At its core, there are five levels to pyfig:
 Basically, you give pyfig a class tree (with defaults), and a bunch of overriding dictionaries, and it
 will create your application's configuration by giving you back a pydantic-based class tree.
 
-Overrides are applied in priority order. A high priority override will always take prescedence over a
+Overrides are applied in priority order. A high priority override will always take precedence over a
 low priority one. Combining all the overrides at once makes it easier later when we apply & template
 the config.
 
