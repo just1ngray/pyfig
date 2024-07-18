@@ -1,8 +1,8 @@
 # pyfig
 
 A Python configuration system that's powerful enough to meet complex requirements, while
-being simple enough so new contributors can confidently make changes without worrying how
-to get everything setup.
+being simple enough so new contributors to your software can confidently make changes without
+worrying how to get everything setup.
 
 ## Features
 
