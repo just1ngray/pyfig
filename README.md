@@ -33,6 +33,71 @@ These can be independently installed as necessary.
 
 ## Usage
 
+1. Install pyfig
+2. Create a class tree of subclasses of `Pyfig` (*). Provide all attributes, types, docs, and defaults in your `.py`'s
+3. Create overriding configs that can be applied hierarchically based on your requirements
+4. Load your configuration:
+    - Using either the built-in 'metaconf' feature (see below for more information), or
+    - By creating your own implementation and calling `pyfig.load_configuration(...)` appropriately
+
+(*) Within nested configuration levels, it's OK to inherit from pydantic's `BaseModel` instead of `Pyfig`. This
+will allow you to re-use the structure but provide context-aware defaults.
+
+<details>
+  <summary>Example using BaseModel instead of just Pyfig</summary>
+
+  Sometimes defaults don't make sense for a generalized structural class,
+  and instead require parental context to define reasonable defaults:
+
+  ```python
+  from pyfig import Pyfig
+  from pydantic import BaseModel
+
+  class Employee(BaseModel):
+      fname: str
+      lname: str
+
+  class StoreConfig(Pyfig):
+      address: str = "123 Grocery Lane"
+      store_manager: Employee = Employee(fname="Alice", lname="Johnson")
+      assistant_manager: Employee = Employee(fname="John", lname="Doe")
+  ```
+
+  By using `BaseModel` inheritance, you've lost the ability to create a configuration rooted at that object.
+  For this reason it's recommended to use `Pyfig` inheritance as much as possible.
+
+  In this case the default config will be created as:
+  ```yaml
+  address: 123 Grocery Lane
+  store_manager:
+    fname: Alice
+    lname: Johnson
+  assistant_manager:
+    fname: John
+    lname: Doe
+  ```
+
+  And overrides can still be provided to these defaults. E.g.,
+  ```yaml
+  # override.yaml
+  assistant_manager:
+    fname: Bob
+    lname: Brown
+
+  # creates:
+  address: 123 Grocery Lane
+  store_manager:
+    fname: Alice
+    lname: Johnson
+  assistant_manager:
+    fname: Bob
+    lname: Brown
+  ```
+</details>
+
+
+### Example
+
 See the [example](./example) directory in this repository for an example of using pyfig.
 
 ```yaml
