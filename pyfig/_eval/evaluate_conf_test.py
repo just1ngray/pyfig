@@ -3,8 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from pyfig._eval.abstract_evaluator import AbstractEvaluator
-
+from .abstract_evaluator import AbstractEvaluator
 from .variable_evaluator import VariableEvaluator
 from .evaluate_conf import _find_evaluator, _evaluate_string, evaluate_conf
 

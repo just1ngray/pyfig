@@ -5,7 +5,6 @@ from typing import List, Dict, Any, Union, Type, TypeVar
 from dataclasses import dataclass, field
 from pathlib import Path
 
-
 from ._pyfig import Pyfig
 from ._eval import AbstractEvaluator
 from ._loader import load_configuration
