@@ -12,7 +12,7 @@ class PythonEvaluator(AbstractEvaluator):
     """
 
     def name(self) -> str:
-        return "py"
+        return "pyeval"
 
     def evaluate(self, value: str) -> Any:
         # pylint: disable=eval-used
