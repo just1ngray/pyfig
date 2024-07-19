@@ -4,3 +4,4 @@ from .variable_evaluator import VariableEvaluator
 from .environment_evaluator import EnvironmentEvaluator
 from .python_evaluator import PythonEvaluator
 from .string_evaluator import StringEvaluator
+from .cat_evaluator import CatEvaluator

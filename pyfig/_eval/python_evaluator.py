@@ -9,6 +9,8 @@ class PythonEvaluator(AbstractEvaluator):
     This is especially powerful when used with other nested templates.
 
     It should be used with caution as it can execute arbitrary code.
+
+    Syntax: "${{pyeval:1 + 1}}"
     """
 
     def name(self) -> str:

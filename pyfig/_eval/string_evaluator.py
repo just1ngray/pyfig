@@ -8,6 +8,8 @@ from .abstract_evaluator import AbstractEvaluator
 class StringEvaluator(AbstractEvaluator):
     """
     A template evaluator which is able to perform Python string method operations.
+
+    Syntax: "${{str.method(args)}}", "${{str.upper('to upper')}}"
     """
 
     def __init__(self) -> None:

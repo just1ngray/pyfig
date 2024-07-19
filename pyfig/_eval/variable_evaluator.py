@@ -6,6 +6,8 @@ from .abstract_evaluator import AbstractEvaluator, EvaluationError
 class VariableEvaluator(AbstractEvaluator):
     """
     A simple evaluator which enables variable interpolation for values known at initialization time.
+
+    Syntax: "${{var.known_variable}}"
     """
     def __init__(self, **variables: Any):
         self._variables = variables
