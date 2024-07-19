@@ -3,9 +3,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from .abstract_evaluator import AbstractEvaluator
-from .variable_evaluator import VariableEvaluator
-from .evaluate_conf import _TEMPLATE_PATTERN, _find_evaluator, _evaluate_string, evaluate_conf
+from ._eval import AbstractEvaluator, VariableEvaluator
+from ._evaluate_conf import _TEMPLATE_PATTERN, _find_evaluator, _evaluate_string, evaluate_conf
 
 
 @pytest.mark.parametrize("string", [

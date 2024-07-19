@@ -24,10 +24,11 @@ pip install git+https://github.com/just1ngray/pyfig.git
 
 Strictly, only [pydantic](https://docs.pydantic.dev/latest/) is required.
 
-To make full use of the 'meta configuration' feature, you may also need some of:
+To make full use of the all features, you may also need some of:
 - [pyyaml](https://pyyaml.org/)
 - [toml](https://pypi.org/project/toml/)
 - [tomli](https://pypi.org/project/tomli/)
+- [sympy](https://www.sympy.org/en/index.html)
 
 These can be independently installed as necessary.
 
