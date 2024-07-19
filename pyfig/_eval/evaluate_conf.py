@@ -83,24 +83,15 @@ def _evaluate_string(string: str, evaluators: Collection[AbstractEvaluator]) -> 
         the modified string with all templates evaluated
         if the template is the entire string, then the type of the evaluator's return value is kept
     """
-    print("->", string)
-
     # if the entire string is a template, evaluate it and keep the type
     if full_match := _TEMPLATE_PATTERN.fullmatch(string):
-        print("FULLMATCH:", full_match)
-
         evaluator = _find_evaluator(full_match.group("evaluator"), evaluators)
         return evaluator.evaluate(full_match.group("value") or "")
 
     def replace_substring(patmatch: re.Match) -> str:
-        print("MATCH:", patmatch)
-
         evaluator = _find_evaluator(patmatch.group("evaluator"), evaluators)
         value = patmatch.group("value") or ""
         replacement = str(evaluator.evaluate(value))
-
-        print("REPLACEMENT:", replacement)
-
         return patmatch.group("nonesc") + replacement
 
     # otherwise, replace only the relevant substring(s)
