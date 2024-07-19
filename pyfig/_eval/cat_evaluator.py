@@ -7,7 +7,7 @@ class CatEvaluator(AbstractEvaluator):
     """
     Cat's the contents of a file.
 
-    Syntax: "${{cat.path/to/file}}", optionally with an encoding: "${{cat./path/to/file:utf-8}}"
+    Syntax: "${{cat.some/relative/path}}", optionally with an encoding: "${{cat./absolute/too:utf-8}}"
     """
 
     def name(self) -> str:
