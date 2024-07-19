@@ -1,7 +1,7 @@
 import re
 from typing import Any, Optional, Collection, Union
 
-from .abstract_evaluator import AbstractEvaluator
+from ._eval import AbstractEvaluator
 
 
 def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> AbstractEvaluator:

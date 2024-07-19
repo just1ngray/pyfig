@@ -2,7 +2,8 @@ from typing import Type, TypeVar, Dict, Collection
 
 from ._pyfig import Pyfig
 from ._override import unify_overrides, apply_overrides
-from ._eval import evaluate_conf, AbstractEvaluator
+from ._eval import AbstractEvaluator
+from ._evaluate_conf import evaluate_conf
 
 
 T = TypeVar("T", bound=Pyfig)
