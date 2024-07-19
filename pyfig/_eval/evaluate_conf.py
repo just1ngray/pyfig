@@ -33,7 +33,35 @@ def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> Abs
         return candidate
 
 
-# the following pattern was created using the DFA state elimination algorithm + human simplification
+#
+# Language Implementation Note:
+#
+# This regular expression is designed to handle the most inner parsing of a template string first.
+# For example, consider the string "${{recursive.${{nested}}}}" which contains two ${{...}} templates.
+# This regular expression will match "${{nested}}" so it can be templated first. When matching the
+# evaluated result, it will match "${{recursive.evaluated}}" so it can be templated next.
+#
+# The other approach would pass value="${{nested}}" to the evaluator="recursive". This could enable
+# users to configure templates for templates. However, this behaviour is probably less intuitive in
+# practice, since most template evaluators are meant to be very simple - it'd be better to take as
+# input to the evaluator an evaluated result rather than a template itself. Using this approach would
+# also require a more powerful language parser, like a context-free grammar.
+#
+# Practical Example:
+#   Consider the simple evaluator: 'cap', which just capitalizes the value.
+#   Suppose that the 'var' evaluator is being used to substitute the 'name' variable.
+#   The configured string is "${{cap.${{var.name}}}}". The expected result is the capitalized name.
+#
+#   The implemented approach will first evaluate "${{var.name}}" to get the name.
+#       "${{cap.${{var.name}}}}" -> "${{cap.justin}}" -> "JUSTIN"
+#
+#   The alternative described approach will pass the templated value to the evaluator.
+#       "${{cap.${{var.name}}}}" -> "${{VAR.NAME}}" -> ?
+#
+# In reality this is probably an edge case nobody will ever really notice...
+# If you really want to template a template, you should escape the inner template.
+# And if you happen to run into issues with single '}' at the end if your 'value': add a trailing space.
+#
 _TEMPLATE_PATTERN = re.compile(r"""
     (?P<nonesc>^|[^\\])                     # either the beginning of the string or a non-escape character
     \$\{\{                                  # the opening template sequence '${{'
@@ -41,14 +69,15 @@ _TEMPLATE_PATTERN = re.compile(r"""
         (\.                                 # optionally, the evaluator itself might have some arguments
             (?P<value>                      # ... but the argument cannot contain unescaped '}}' or '${{' substrings
                 (                               # OK state:
-                    [^$}]                       # -> regular allowed first characters (not '}' or '$')
+                    \\.                         # -> any escaped character
+                    | [^$}]                     # -> regular allowed first characters (not '}' or '$')
                     | \}[^}]                    # -> '}' followed by anything but '}'
-                    | \$\}?[^{]                 # -> '$' or '${' followed by anything but '{'
+                    | \$\{?[^{]                 # -> '$' or '${' followed by anything but '{'
                 )*
-                (                               # OK state, but only at end:
+                (                               # OK state (but only at the end, and only if necessary for a match):
                     \}                          # -> a single trailing '}'
                     | \$\}?                     # -> a trailing '$' or '${'
-                )?
+                )??
             )
         )?
     \}\}                                    # the closing template sequence '}}'
