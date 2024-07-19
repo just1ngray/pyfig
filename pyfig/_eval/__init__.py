@@ -5,3 +5,4 @@ from .python_evaluator import PythonEvaluator
 from .string_evaluator import StringEvaluator
 from .cat_evaluator import CatEvaluator
 from .sympy_evaluator import SympyEvaluator
+from .jsonfile_evaluator import JSONFileEvaluator
