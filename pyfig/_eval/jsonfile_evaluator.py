@@ -37,6 +37,6 @@ class JSONFileEvaluator(AbstractEvaluator):
             elif isinstance(jsondata, dict):
                 jsondata = jsondata[key]
             else:
-                raise KeyError()
+                raise KeyError("Unknown json data type. Expected dict or list.")
 
         return jsondata

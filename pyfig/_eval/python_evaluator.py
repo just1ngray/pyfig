@@ -13,6 +13,13 @@ class PythonEvaluator(AbstractEvaluator):
     Syntax: "${{pyeval:1 + 1}}"
     """
 
+    def __init__(self, *, danger: str = "not_accepted"):
+        if danger != "accepted":
+            raise RuntimeError(
+                "This evaluator is dangerous because it can execute arbitrary python code. It should "
+                "only be used with caution. If you understand the risks, set exactly danger='accepted'"
+            )
+
     def name(self) -> str:
         return "pyeval"
 

@@ -15,5 +15,12 @@ from .python_evaluator import PythonEvaluator
     ("[1, 2, 3][1]", 2),
 ])
 def test__given_proper_python_syntax_variable__when_evaluate_with_python_evaluator__then_returns_output(value, exp):
-    evaluator = PythonEvaluator()
+    evaluator = PythonEvaluator(danger="accepted")
     assert evaluator.evaluate(value) == exp
+
+def test__given_no_args_python_evaluator__when_instantiate__then_raises_error():
+    with pytest.raises(RuntimeError):
+        PythonEvaluator()
+
+    with pytest.raises(RuntimeError):
+        PythonEvaluator(danger="bad_value")
