@@ -33,7 +33,25 @@ def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> Abs
         return candidate
 
 
-_TEMPLATE_PATTERN = re.compile(r"\$\{\{(?P<evaluator>[A-Za-z0-9_-]*)(\.(?P<value>([^}]|\}[^}])*\}?))?\}\}")
+_TEMPLATE_PATTERN = re.compile(r"""
+    (?P<nonesc>^|[^\\])                     # either the beginning of the string or a non-escape character
+    \$\{\{                                  # the opening template sequence '${{'
+        (?P<evaluator>[A-Za-z0-9_-]*)       # the evaluator name to use
+        (\.                                 # optionally, the evaluator itself might have some arguments
+            (?P<value>                      # ... but the argument cannot contain unescaped '}}' or '${{' substrings
+                (
+                    [^$}]
+                    | \}[^}]
+                    | \$\}?[^{]
+                )*
+                (
+                    \}
+                    | \$\}?
+                )?
+            )
+        )?
+    \}\}                                    # the closing template sequence '}}'
+""", re.VERBOSE)
 """
 A regular expression pattern that matches a template string.
 
@@ -47,6 +65,8 @@ E.g.,
     "${{foo}}" -> { "evaluator": "foo", "value": None }
     "${{foo.bar}}" -> { "evaluator": "foo", "value": "bar" }
     "some ${{eval.val}} string" -> { "evaluator": "eval", "value": "val" }
+
+Note: if escaped - i.e., \\${{...}} - then there is no match.
 """
 
 
@@ -62,15 +82,30 @@ def _evaluate_string(string: str, evaluators: Collection[AbstractEvaluator]) -> 
         the modified string with all templates evaluated
         if the template is the entire string, then the type of the evaluator's return value is kept
     """
+    print("->", string)
+
     # if the entire string is a template, evaluate it and keep the type
     if full_match := _TEMPLATE_PATTERN.fullmatch(string):
+        print("FULLMATCH:", full_match)
+
         evaluator = _find_evaluator(full_match.group("evaluator"), evaluators)
         return evaluator.evaluate(full_match.group("value") or "")
+
+    def replace_substring(patmatch: re.Match) -> str:
+        print("MATCH:", patmatch)
+
+        evaluator = _find_evaluator(patmatch.group("evaluator"), evaluators)
+        value = patmatch.group("value") or ""
+        replacement = str(evaluator.evaluate(value))
+
+        print("REPLACEMENT:", replacement)
+
+        return patmatch.group("nonesc") + replacement
 
     # otherwise, replace only the relevant substring(s)
     return re.sub(
         _TEMPLATE_PATTERN,
-        lambda m: str(_find_evaluator(m.group("evaluator"), evaluators).evaluate(m.group("value") or "")),
+        replace_substring,
         string
     )
 

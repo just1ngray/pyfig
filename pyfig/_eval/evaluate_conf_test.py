@@ -1,4 +1,5 @@
 from copy import deepcopy
+from unittest import mock
 from unittest.mock import Mock
 
 import pytest
@@ -33,10 +34,12 @@ def test__given_evaluators__when_find_evaluator__then_returns_correct_evaluator(
     "{{no dollar sign}}",
     "3.14",
     "${single brace only}",
-    "${custom.{} }"
+    "\\${{escaped}}"
 ])
 def test__given_regular_string__when_evaluate_string__then_return_unmodified_string(string: str):
-    mock_evaluator = VariableEvaluator(mock="mocked")
+    mock_evaluator = Mock(spec=AbstractEvaluator)
+    mock_evaluator.name.return_value = "mock"
+    mock_evaluator.evaluate.return_value = "mocked"
     assert _evaluate_string(string, [mock_evaluator]) == string
 
 def test__given_full_string_template__when_evaluate_string__then_returns_evaluated_string():
