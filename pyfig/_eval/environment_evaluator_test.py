@@ -1,12 +1,11 @@
 import pytest
 
 from .environment_evaluator import EnvironmentEvaluator
-from .abstract_evaluator import EvaluationError
 
 
-def test__given_environment_evaluator__when_value_is_not_in_env__then_raises_evaluation_error():
+def test__given_environment_evaluator__when_value_is_not_in_env__then_raises_key_error():
     evaluator = EnvironmentEvaluator()
-    with pytest.raises(EvaluationError):
+    with pytest.raises(KeyError):
         evaluator.evaluate("this-environment-variable-shouldn't-exist")
 
 def test__given_environment_evaluator__when_env_value_is_set__then_returns_that_value(monkeypatch: pytest.MonkeyPatch):

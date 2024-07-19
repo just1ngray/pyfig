@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from .abstract_evaluator import AbstractEvaluator, EvaluationError
+from .abstract_evaluator import AbstractEvaluator
 
 
 class EnvironmentEvaluator(AbstractEvaluator):
@@ -15,7 +15,4 @@ class EnvironmentEvaluator(AbstractEvaluator):
         return "env"
 
     def evaluate(self, value: str) -> Any:
-        try:
-            return os.environ[value]
-        except KeyError as exc:
-            raise EvaluationError(self, value) from exc
+        return os.environ[value]
