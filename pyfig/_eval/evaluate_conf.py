@@ -33,20 +33,21 @@ def _find_evaluator(name: str, evaluators: Collection[AbstractEvaluator]) -> Abs
         return candidate
 
 
+# the following pattern was created using the DFA state elimination algorithm + human simplification
 _TEMPLATE_PATTERN = re.compile(r"""
     (?P<nonesc>^|[^\\])                     # either the beginning of the string or a non-escape character
     \$\{\{                                  # the opening template sequence '${{'
         (?P<evaluator>[A-Za-z0-9_-]*)       # the evaluator name to use
         (\.                                 # optionally, the evaluator itself might have some arguments
             (?P<value>                      # ... but the argument cannot contain unescaped '}}' or '${{' substrings
-                (
-                    [^$}]
-                    | \}[^}]
-                    | \$\}?[^{]
+                (                               # OK state:
+                    [^$}]                       # -> regular allowed first characters (not '}' or '$')
+                    | \}[^}]                    # -> '}' followed by anything but '}'
+                    | \$\}?[^{]                 # -> '$' or '${' followed by anything but '{'
                 )*
-                (
-                    \}
-                    | \$\}?
+                (                               # OK state, but only at end:
+                    \}                          # -> a single trailing '}'
+                    | \$\}?                     # -> a trailing '$' or '${'
                 )?
             )
         )?
