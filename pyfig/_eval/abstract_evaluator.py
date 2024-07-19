@@ -14,8 +14,8 @@ class AbstractEvaluator(ABC):
         """
         Evaluates the given value and returns a replacement value.
 
-        E.g., if the configured string is: "hello, ${name}!" then the 'name' evaluator is called with empty string.
-        E.g., if the configured string is: "hello, ${var.name}!" then the 'var' evaluator is called 'name'.
+        E.g., if the configured string is: "hello, ${{name}}!" then the 'name' evaluator is called with empty string.
+        E.g., if the configured string is: "hello, ${{var.name}}!" then the 'var' evaluator is called 'name'.
 
         Args:
             value: The value to evaluate (does not include the evaluator name or braces from the original string)

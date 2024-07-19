@@ -5,8 +5,41 @@ import pytest
 
 from .abstract_evaluator import AbstractEvaluator
 from .variable_evaluator import VariableEvaluator
-from .evaluate_conf import _find_evaluator, _evaluate_string, evaluate_conf
+from .evaluate_conf import _TEMPLATE_PATTERN, _find_evaluator, _evaluate_string, evaluate_conf
 
+
+@pytest.mark.parametrize("string", [
+    "",
+    "\\${{escaped}}",
+    "$\\{{more.escaping}}",
+    "${\\{more.escaping}}",
+    "${{more.escaping}\\}",
+    "${{inv@lid.character}}"
+])
+def test__given_unmatched_string__when_match_against_template_pattern__then_doesnt_match(string: str):
+    patmatch = _TEMPLATE_PATTERN.search(string)
+    assert patmatch is None
+
+@pytest.mark.parametrize("string,nonesc,evaluator,value", [
+    ("${{easy}}",                               "",  "easy",        None),
+    ("${{easy.mode}}",                          "",  "easy",        "mode"),
+    ("it's a ${{sub.string}}!",                 " ", "sub",         "string"),
+    ("${{partial ${{evaluate.me}}",             " ", "evaluate",    "me"),
+    ("${{evaluate.me}} nope}}",                 "",  "evaluate",    "me"),
+    ("${{eval.$}}",                             "",  "eval",        "$"),
+    ("${{eval.{py_string} }}",                   "",  "eval",       "{py_string} "),
+    ("${{eval.${js_string} }}",                  "",  "eval",       "${js_string} "),
+    ("${{recursive.repl='\\${{template\\}}'}}", "",  "recursive",   "repl='\\${{template\\}}'"),
+    ("${{cap.${{var.name}}}}",                  ".", "var",         "name"),
+])
+def test__given_matching_string__when_match_against_template_pattern__then_matches_properly(
+        string: str, nonesc: str, evaluator: str, value: str):
+
+    patmatch = _TEMPLATE_PATTERN.search(string)
+    assert patmatch is not None
+    assert patmatch.group("nonesc") == nonesc
+    assert patmatch.group("evaluator") == evaluator
+    assert patmatch.group("value") == value
 
 def test__given_evaluators__when_find_evaluator_with_missing_evaluator__then_raises_value_error():
     variable_evaluator = VariableEvaluator(name="mock")
@@ -33,10 +66,12 @@ def test__given_evaluators__when_find_evaluator__then_returns_correct_evaluator(
     "{{no dollar sign}}",
     "3.14",
     "${single brace only}",
-    "${custom.{} }"
+    "\\${{escaped}}"
 ])
 def test__given_regular_string__when_evaluate_string__then_return_unmodified_string(string: str):
-    mock_evaluator = VariableEvaluator(mock="mocked")
+    mock_evaluator = Mock(spec=AbstractEvaluator)
+    mock_evaluator.name.return_value = "mock"
+    mock_evaluator.evaluate.return_value = "mocked"
     assert _evaluate_string(string, [mock_evaluator]) == string
 
 def test__given_full_string_template__when_evaluate_string__then_returns_evaluated_string():

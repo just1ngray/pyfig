@@ -1,3 +1,5 @@
+import json
+
 from pydantic import BaseModel
 
 
@@ -18,3 +20,21 @@ class Pyfig(BaseModel):
         for name in cls.__annotations__.keys():
             if not hasattr(cls, name):
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
+
+
+    def model_dump_dict(self) -> dict:
+        """
+        Dumps the model as a dictionary.
+
+        Performs the same serialization to json-supported types as `model_dump_json`. This means:
+            - Enums become their value
+            - Path becomes a string
+            - None becomes null
+            - Etc.
+
+        Returns:
+            the data as a dictionary
+        """
+        plain_json = self.model_dump_json()
+        plain_dict = json.loads(plain_json)
+        return plain_dict

@@ -1,17 +1,16 @@
 # pyfig
 
 A Python configuration system that's powerful enough to meet complex requirements, while
-being simple enough so new contributors can confidently make changes without worrying how
-to get everything setup.
+being simple enough so new contributors to your software can confidently make changes without
+worrying how to get everything setup.
 
 ## Features
 
-- 🏆 Hierarchical overrides
+- 📂 Hierarchical overrides
 - ✅ Validation powered by [pydantic](https://docs.pydantic.dev/latest/)
-- ✏️ Extensible templating for variables
-- 🚀 Type-annotated configuration classes
-- 🔎 Document your config using docstrings
-- 📦 Package config files with your application, then configure how to combine the configs
+- 📝 Extensible templating for variables
+- 🛠️ Types, defaults, validation, and docs: all in one place directly in your code
+- 📦 Package configuration files with your application and define how they are merged
 
 Note: pyfig does not inherently support changes to the config at runtime.
 
@@ -33,6 +32,71 @@ To make full use of the 'meta configuration' feature, you may also need some of:
 These can be independently installed as necessary.
 
 ## Usage
+
+1. Install pyfig
+2. Create a class tree of subclasses of `Pyfig` (*). Provide all attributes, types, docs, and defaults in your `.py`'s
+3. Create overriding configs that can be applied hierarchically based on your requirements
+4. Load your configuration:
+    - Using either the built-in 'metaconf' feature (see below for more information), or
+    - By creating your own implementation and calling `pyfig.load_configuration(...)` appropriately
+
+(*) Within nested configuration levels, it's OK to inherit from pydantic's `BaseModel` instead of `Pyfig`. This
+will allow you to re-use the structure but provide context-aware defaults.
+
+<details>
+  <summary>Example using BaseModel instead of just Pyfig</summary>
+
+  Sometimes defaults don't make sense for a generalized structural class,
+  and instead require parental context to define reasonable defaults:
+
+  ```python
+  from pyfig import Pyfig
+  from pydantic import BaseModel
+
+  class Employee(BaseModel):
+      fname: str
+      lname: str
+
+  class StoreConfig(Pyfig):
+      address: str = "123 Grocery Lane"
+      store_manager: Employee = Employee(fname="Alice", lname="Johnson")
+      assistant_manager: Employee = Employee(fname="John", lname="Doe")
+  ```
+
+  By using `BaseModel` inheritance, you've lost the ability to create a configuration rooted at that object.
+  For this reason it's recommended to use `Pyfig` inheritance as much as possible.
+
+  In this case the default config will be created as:
+  ```yaml
+  address: 123 Grocery Lane
+  store_manager:
+    fname: Alice
+    lname: Johnson
+  assistant_manager:
+    fname: John
+    lname: Doe
+  ```
+
+  And overrides can still be provided to these defaults. E.g.,
+  ```yaml
+  # override.yaml
+  assistant_manager:
+    fname: Bob
+    lname: Brown
+
+  # creates:
+  address: 123 Grocery Lane
+  store_manager:
+    fname: Alice
+    lname: Johnson
+  assistant_manager:
+    fname: Bob
+    lname: Brown
+  ```
+</details>
+
+
+### Example
 
 See the [example](./example) directory in this repository for an example of using pyfig.
 
@@ -64,7 +128,13 @@ This config turns the example default config:
 ```yaml
 name: My Application
 version: 0.1.0
-log_level: DEBUG
+logging:
+  stdout:
+    enabled: false
+    level: INFO
+  stderr:
+    enabled: true
+    level: DEBUG
 modules:
   health_monitor:
     enabled: false
@@ -78,12 +148,18 @@ modules:
       retries: 3
 ```
 
-into a config ready for use by the application:
+into a config ready to be used by the application:
 
 ```yaml
 name: Production Application
 version: 0.1.0
-log_level: INFO
+logging:
+  stdout:
+    enabled: false
+    level: INFO
+  stderr:
+    enabled: true
+    level: DEBUG
 modules:
   health_monitor:
     enabled: true
@@ -101,21 +177,18 @@ modules:
 
 At its core, there are five levels to pyfig:
 
-1. Deserializing configuration overrides from files is handled by other libraries (json, yaml, etc.)
-2. Combine overrides by merging them in priority order
-3. Apply the (combined) overrides to the default config
-4. Evaluate string templates
-5. Convert & validate into a pydantic class tree for use by the application
-
-Basically, you give pyfig a class tree (with defaults), and a bunch of overriding dictionaries, and it
-will create your application's configuration by giving you back a pydantic-based class tree.
+1. Deserializing configuration overrides from files: handled by other libraries (json, yaml, etc.)
+2. Combining configuration overrides by merging them in priority order
+3. Appling the (combined) overrides to the default config
+4. Recursively evaluating string templates
+5. Converting & validating the final pydantic class tree
 
 Overrides are applied in priority order. A high priority override will always take precedence over a
 low priority one. Combining all the overrides at once makes it easier later when we apply & template
 the config.
 
-Templates are string-based variables which allow you to separate config structure from contents. There
-are two modes:
+Templates are string-based variables which allow you to substitute values directly into the config.
+There are two primary modes:
 1. When a value contains a template substring, only the substring is replaced.
     ```yaml
     endpoint: http://${{var.host}}/api
@@ -136,7 +209,7 @@ are two modes:
       port: 8080
     ```
 
-Additionally, templates are evaluated recursively. This means that templates themselves can contain templates:
+Since templates are evaluated recursively, they can contain templates themselves:
 ```yaml
 # default value includes a template
 endpoint: ${{var.endpoint}}
@@ -146,7 +219,7 @@ endpoint:
   host: ${{var.cluster}}
   port: 80
 
-# and then finally, perhaps
+# and finally, perhaps
 endpoint:
   host: 255.255.255.255
   port: 80
@@ -158,24 +231,30 @@ endpoint:
 are welcome to design your own approach for loading and creating your application's config, and still call
 the coordinating `load_configuration()` pyfig function ([src](./pyfig/_loader.py)).
 
-The idea behind Metaconf is to bundle all overriding configuration dimensions into your application's image.
-Application implementations change frequently - requiring adjustments to the deployed configuration, but by
-contrast the general objectives of configuration are much more static. Metaconf describes the objectives of
-the configuration, and references config files more closely bundled with the application.
+The idea behind Metaconf is to bundle all overriding configuration settings into your application's image.
+While application implementations (and therefore configs) are prone to changing frequently, the general
+objectives for configuration are much more static. Metaconf describes the objectives of the configuration,
+and references config files more closely bundled with the application.
+
+Overall this reduces the number of times your application breaks because it received a bad configuration.
+You no longer need to be as worried about synchronizing software and configuration deployments, if they're
+traditionally handled separately.
 
 Sometimes a relevant config file may not exist, and in that case the `overrides` section can be used directly
 inside Metaconf to provide top-level overrides to the application's config.
 
 To effectively use metaconf:
 
-1. Create a separate config file for each dimension of your software's configuration. You can reduce the
-   number of files by choosing reasonable defaults for your default config. E.g., `dev` mode is default,
-   and then you have overriding files for each of `staging` and `prod`. Your application may have different
-   modes, hardware, environments, etc. Typically identifying the dimensions is simple
-2. When building your application's image (or other deployment model), include all config files, even if
-   they are typically unused
-3. Define one or more Metaconf configuration files which provide instructions on how to configure the
-   application for each execution model. Try to use [environment] variables to reduce the number of
-   device-specific changes required
-4. Now, deploy a Metaconf to your device(s) and watch as the configuration is built using the defined
-   overrides.
+1. Create an overriding config file which handles an objective by overriding a group of config settings.
+  > E.g., dev vs. staging vs. prod. Differing hardware. Different environments. Etc.
+  > Choosing reasonable default values can eliminate the need for so many overrides.
+
+2. When packaging your application (e.g., building the docker image), be sure to include all config files.
+
+3. Define one or more metaconf configuration files that combine configuration objectives into a hierarchy.
+  > Tip: Make use of the templating feature in order to avoid so much duplication. If needed, write your
+  > own custom evaluators.
+
+4. Deploy the appropriate metaconf to your device(s)/pod(s)/etc.
+  > Assuming configuration objectives remain constant, you may not have to make a metaconf deployment for
+  > quite some time, because all necessary config changes are bundled into the application layer

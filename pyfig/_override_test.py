@@ -102,17 +102,17 @@ def test__given_same_key_overridden_with_more_fields__when_unify_overrides__then
         "more": "stuff"
     }}
 
-def test__given_empty_dict__when_override_with_stuff__then_raises_key_error():
+def test__given_empty_dict__when_override_with_stuff__then_sets_anyway():
     empty_dict = {}
     override = { "a": 1 }
-    with pytest.raises(KeyError, match=r"Unknown key 'a' in override \(root\)"):
-        apply_overrides(empty_dict, override)
+    apply_overrides(empty_dict, override)
+    assert empty_dict == override
 
-def test__given_flat_dict__when_override_with_unknown_stuff__then_raises_key_error():
+def test__given_flat_dict__when_override_with_unknown_stuff__then_sets_anyway():
     conf = { "a": 1 }
     override = { "b": 2 }
-    with pytest.raises(KeyError, match=r"Unknown key 'b' in override \(root\)"):
-        apply_overrides(conf, override)
+    apply_overrides(conf, override)
+    assert conf == { "a": 1, "b": 2 }
 
 def test__given_single_key_dict__when_override_that_key__then_mutates_dict_with_override():
     conf = { "a": 1 }
@@ -187,7 +187,7 @@ def test__given_flat_conf__when_override_with_nested_dict__then_overrides_with_n
         "b": 2
     }
 
-def test__given_nested_conf__when_override_unknown_nested_key__then_raises_key_error():
+def test__given_nested_conf__when_override_unknown_nested_key__then_sets_anyway():
     conf = {
         "top": {
             "a": 1,
@@ -200,5 +200,12 @@ def test__given_nested_conf__when_override_unknown_nested_key__then_raises_key_e
             "foo": 100
         }
     }
-    with pytest.raises(KeyError, match=r"Unknown key 'foo' in override \(.top\)"):
-        apply_overrides(conf, override)
+    apply_overrides(conf, override)
+    assert conf == {
+        "top": {
+            "a": 1,
+            "b": 2,
+            "foo": 100
+        },
+        "level": 3
+    }
