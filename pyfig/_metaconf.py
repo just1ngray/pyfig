@@ -136,17 +136,35 @@ class Metaconf:
     """
 
     @staticmethod
-    def from_path(path: Union[str, Path]) -> "Metaconf":
+    def from_path(path: Union[str, Path], *, relative_to: Union[str, Path, None]=None) -> "Metaconf":
         """
         Constructs a metaconf, which is then capable of `load_config` to get your application's config.
+
+        Args:
+            path:           the path on disk to the meta configuration file
+            relative_to:    if given, all relative config paths will be joined to this path
+
+        Returns:
+            A Metaconf instance
         """
         data = _load_dict(path) or {}
 
+        overrides = data.get("overrides", {})
         evaluators: List[AbstractEvaluator] = []
-        for evaluator, params in data.pop("evaluators", {}).items():
+        configs = data.get("configs", [])
+
+        for evaluator, params in data.get("evaluators", {}).items():
             evaluators.append(_construct_evaluator(evaluator, params))
 
-        return Metaconf(evaluators=evaluators, **data)
+        if relative_to is not None:
+            relative_to = Path(relative_to)
+            configs = [relative_to.joinpath(cfg).as_posix() for cfg in configs]
+
+        return Metaconf(
+            evaluators=evaluators,
+            overrides=overrides,
+            configs=configs
+        )
 
     def load_config(self, target: Type[T]) -> T:
         """
