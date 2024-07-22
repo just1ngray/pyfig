@@ -1,7 +1,5 @@
 import textwrap
 from pathlib import Path
-from unittest.mock import patch, Mock
-from typing import List
 
 import pytest
 
@@ -196,6 +194,26 @@ def test__given_empty_metaconf__when_metaconf_from_path__then_creates_default(py
     assert metaconf.evaluators == default.evaluators
     assert metaconf.configs == default.configs
     assert metaconf.overrides == default.overrides
+
+def test__given_metaconf__when_from_path_relative_to__then_all_relative_paths_are_relative_to_relative_to(pytestdir: Path):
+    relative_to = pytestdir / "rel_to"
+    relative_one = pytestdir / relative_to / "relative.yaml"
+    relative_two = pytestdir / relative_to / "other" / "relative" / "path.yaml"
+    absolute = pytestdir / "absolute_path.yaml"
+
+    for path in [relative_one, relative_two, absolute]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+
+    path = pytestdir / "metaconf.yaml"
+    path.write_text(textwrap.dedent(f"""\
+        configs:
+            - relative.yaml
+            - other/relative/path.yaml
+            - {absolute}
+    """), encoding="utf-8")
+
+    Metaconf.from_path(path, relative_to=relative_to) # checks that files exist
 
 def test__given_metaconf__when_load_config__then_loads_files_and_calls_load_configuration(pytestdir: Path):
     class TargetConf(Pyfig):
