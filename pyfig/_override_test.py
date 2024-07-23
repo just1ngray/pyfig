@@ -1,5 +1,3 @@
-import pytest
-
 from ._override import unify_overrides, apply_overrides
 
 
@@ -101,6 +99,18 @@ def test__given_same_key_overridden_with_more_fields__when_unify_overrides__then
         "nested": "stuff",
         "more": "stuff"
     }}
+
+def test__given_list_override__when_unify_overrides__then_is_overridden_atomically():
+    config  = { "list": [1, 2, 3] }
+    override = { "list": [4, 5, 6] }
+    unified = unify_overrides(override, config)
+    assert unified == override
+
+def test__given_list_element_override__when_unify_overrides__then_only_that_element_is_overridden():
+    config  = { "list": [1, 2, 3] }
+    override = { "list": {"1": 4} }
+    unified = unify_overrides(override, config)
+    assert unified == { "list": [1, 4, 3] }
 
 def test__given_empty_dict__when_override_with_stuff__then_sets_anyway():
     empty_dict = {}
