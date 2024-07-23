@@ -6,3 +6,4 @@ from .string_evaluator import StringEvaluator
 from .cat_evaluator import CatEvaluator
 from .sympy_evaluator import SympyEvaluator
 from .jsonfile_evaluator import JSONFileEvaluator
+from .yamlfile_evaluator import YamlFileEvaluator
