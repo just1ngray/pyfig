@@ -10,6 +10,12 @@ class CatEvaluator(AbstractEvaluator):
     Syntax: "${{cat.some/relative/path}}", optionally with an encoding: "${{cat./absolute/too:utf-8}}"
     """
 
+    def __init__(self, *, trim: bool=True) -> None:
+        """
+        Whjen `trim` is `True`, the content is stripped of leading and trailing whitespace.
+        """
+        self._trim = trim
+
     def name(self) -> str:
         return "cat"
 
@@ -18,4 +24,8 @@ class CatEvaluator(AbstractEvaluator):
         path = Path(parts[0])
         encoding = parts[1] if len(parts) >= 2 else "utf-8"
 
-        return path.read_text(encoding)
+        content = path.read_text(encoding)
+        if self._trim:
+            content = content.strip()
+
+        return content
