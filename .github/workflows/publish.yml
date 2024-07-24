@@ -100,7 +100,7 @@ jobs:
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
-    if: github.ref == 'refs/heads/master'  # only publish to TestPyPI on pushes to master
+    # if: github.ref == 'refs/heads/master'  # only publish to TestPyPI on pushes to master
     needs:
     - build
     runs-on: ubuntu-latest
