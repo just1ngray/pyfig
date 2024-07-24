@@ -1,3 +1,5 @@
+name: 📝 Pytest
+
 on:
   push:
     branches: [ "master" ]
