@@ -1,3 +1,4 @@
+import time
 import subprocess
 from setuptools import setup, find_packages
 
@@ -23,10 +24,9 @@ def git_version() -> str:
         except subprocess.CalledProcessError:
             pass
 
-        # Return commit hash if not exactly at a tag
-        return f"{tag}-dev{commit[:7]}"
+        return f"0.1.{int(commit[:7], 16)}"
     except subprocess.CalledProcessError:
-        return "0.1.0-devERR"
+        return f"0.1.{int(time.time())}"
 
 setup(
     name="jpyfig",
