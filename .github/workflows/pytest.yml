@@ -9,23 +9,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.8'
-    - name: Cache pip downloads
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install .
-        pip install -r requirements-dev.txt
-    - name: Test with pytest
-      run: |
-        pytest
+      # setup
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      # install and cache pip dependencies
+      # ... cache is invalidated daily or when requirements-dev.txt changes
+      - name: Set cache date
+        run: echo "CACHE_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+      - name: Cache pip downloads
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}-${{ env.CACHE_DATE }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install -r requirements-dev.txt
+
+      # finally run pytest
+      - name: Test with pytest
+        run: |
+          pytest
