@@ -1,11 +1,12 @@
 name: Publish Python 🐍 distribution 📦 to PyPI
 
-on:
-  push:
-    branches:
-      - master
-    tags:
-      - 'v*'
+# on:
+#   push:
+#     branches:
+#       - master
+#     tags:
+#       - 'v*'
+on: push
 
 jobs:
   build:
