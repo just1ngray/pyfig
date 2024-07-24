@@ -24,9 +24,9 @@ def git_version() -> str:
             pass
 
         # Return commit hash if not exactly at a tag
-        return f"{tag}+{commit[:7]}"
+        return f"{tag}-dev{commit[:7]}"
     except subprocess.CalledProcessError:
-        return "0.1.0+ERR"
+        return "0.1.0-devERR"
 
 setup(
     name="jpyfig",
