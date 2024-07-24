@@ -1,31 +1,32 @@
 import subprocess
 from setuptools import setup, find_packages
 
+def _last_git_tag() -> str:
+    try:
+        return subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"]).strip().decode("utf-8")
+    except subprocess.CalledProcessError:
+        return "0.1.0"
+
 def git_version() -> str:
     """
     If the latest commit is tagged, use that tag. Otherwise use the short commit hash.
     """
     try:
-        # Get the latest tag, if available
-        try:
-            tag = subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"]).strip().decode("utf-8")
-        except subprocess.CalledProcessError:
-            tag = None
+        tag = _last_git_tag()
 
-        if tag:
-            # Check if the current commit is exactly at the tag
-            commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("utf-8")
+        # Check if the current commit is exactly at the tag
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("utf-8")
+        try:
             tagged_commit = subprocess.check_output(["git", "rev-list", "-n", "1", tag]).strip().decode("utf-8")
             if commit == tagged_commit:
                 return tag
-            else:
-                # Return commit hash if not exactly at a tag
-                return "0.0." + subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
-        else:
-            # No tags found, return the commit hash
-            return "0.0." + subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
+        except subprocess.CalledProcessError:
+            pass
+
+        # Return commit hash if not exactly at a tag
+        return f"{tag}+{commit[:7]}"
     except subprocess.CalledProcessError:
-        return "0.0.err"
+        return "0.1.0+ERR"
 
 setup(
     name="jpyfig",
