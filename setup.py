@@ -20,12 +20,12 @@ def git_version() -> str:
                 return tag
             else:
                 # Return commit hash if not exactly at a tag
-                return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
+                return "0.0." + subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
         else:
             # No tags found, return the commit hash
             return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
     except subprocess.CalledProcessError:
-        return "err"
+        return "0.0.err"
 
 setup(
     name="jpyfig",
