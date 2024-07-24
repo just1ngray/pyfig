@@ -15,10 +15,8 @@ Note: pyfig does not inherently support changes to the config at runtime. This f
 
 ## Installation
 
-For now this package must be installed through the GitHub page. Hopefully soon I will package it on Pypi.
-
 ```shell
-pip install git+https://github.com/just1ngray/pyfig.git
+pip install jpyfig
 ```
 
 ### Requirements
