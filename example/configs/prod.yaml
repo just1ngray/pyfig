@@ -1,4 +1,0 @@
-log_level: INFO
-modules:
-  important_task:
-    resource: "${{var.protocol}}://${{var.host}}${{var.port}}/important_task"

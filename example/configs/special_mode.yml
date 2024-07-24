@@ -1,5 +1,0 @@
-modules:
-  important_task:
-    params:
-      timeout: 60
-      retries: 100
