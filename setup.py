@@ -9,7 +9,7 @@ def get_version() -> str:
     raise ValueError("Version not found")
 
 setup(
-    name="pyfig",
+    name="jpyfig",
     version=get_version(),
     author="Justin Gray",
     author_email="just1ngray@outlook.com",
