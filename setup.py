@@ -1,16 +1,36 @@
+import time
+import subprocess
 from setuptools import setup, find_packages
 
-def get_version() -> str:
-    with open("pyfig/__init__.py", "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("__version__"):
-                return line.split("=", maxsplit=1)[1].strip(" '\"")
-    raise ValueError("Version not found")
+def _last_git_tag() -> str:
+    try:
+        return subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"]).strip().decode("utf-8")
+    except subprocess.CalledProcessError:
+        return "0.1.0"
+
+def git_version() -> str:
+    """
+    If the latest commit is tagged, use that tag. Otherwise use the short commit hash.
+    """
+    try:
+        tag = _last_git_tag()
+
+        # Check if the current commit is exactly at the tag
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("utf-8")
+        try:
+            tagged_commit = subprocess.check_output(["git", "rev-list", "-n", "1", tag]).strip().decode("utf-8")
+            if commit == tagged_commit:
+                return tag
+        except subprocess.CalledProcessError:
+            pass
+
+        return f"0.1.{int(commit[:7], 16)}"
+    except subprocess.CalledProcessError:
+        return f"0.1.{int(time.time())}"
 
 setup(
-    name="pyfig",
-    version=get_version(),
+    name="jpyfig",
+    version=git_version(),
     author="Justin Gray",
     author_email="just1ngray@outlook.com",
     url="https://github.com/just1ngray/pyfig",

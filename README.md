@@ -15,10 +15,8 @@ Note: pyfig does not inherently support changes to the config at runtime. This f
 
 ## Installation
 
-For now this package must be installed through the GitHub page. Hopefully soon I will package it on Pypi.
-
 ```shell
-pip install git+https://github.com/just1ngray/pyfig.git
+pip install jpyfig
 ```
 
 ### Requirements
@@ -39,9 +37,10 @@ These can be independently installed as necessary.
 2. Create a class tree of subclasses of `Pyfig` (*). Provide all attributes, types, docs, and defaults in your `.py`'s
 3. Create overriding configs that can be applied hierarchically based on your requirements
 4. Load your configuration:
-    - Using either the built-in 'metaconf' feature (see [tutorial](./tutorial/06_metaconf.md) for more information), or
+    - Using either the built-in 'metaconf' feature, or
     - By creating your own implementation and calling `pyfig.load_configuration(...)` appropriately
 
 ## Tutorial
 
-There is a small tutorial ready to walk you through the features and patterns when using Pyfig. [Click me](./tutorial/)
+There is a small tutorial ready to walk you through the features and patterns when using Pyfig.
+[Click me](https://github.com/just1ngray/pyfig/tree/publish-pypi-on-tag/tutorial)
