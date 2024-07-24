@@ -74,6 +74,7 @@ All evaluators are implemented in [this module](../pyfig/_eval/).
 | EnvironmentEvaluator | env | Use environment variables | `${{env.<ENVIRONMENT_VARIABLE>}}` |
 | CatEvaluator | cat | Use the contents of a file | `${{cat.any/file.path}}` |
 | JSONFileEvaluator | jsonfile | Extract a json file field | `${{jsonfile.access.path.to.field:/path/to/file.json}}` |
+| YamlFileEvaluator | pyyaml | Extract a yaml file field | `${{pyyaml.access.path.to.field:/path/to/file.yaml}}` |
 | PythonEvaluator | pyeval | `eval()` an expression with Python | `${{pyeval:1 + 1}}` |
 | StringEvaluator | str | Calls a Python string method | `${{str.upper('hello')}}` |
 | SympyEvaluator | sympy | Evaluates a math expression | `${{sympy.3+5}}` |
