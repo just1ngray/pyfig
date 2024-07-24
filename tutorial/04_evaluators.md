@@ -1,6 +1,6 @@
 # Evaluators
 
-Evaluators replace templates in the config with some other value. They're evaluated recursively, and can be extended
+Evaluators replace templates in the config with some other value. They're evaluated repeatedly, and can be extended
 to implement whatever behaviour you want. They can fill-in new data, as well as mutate existing values. When calling
 `load_configuration(...)`, all necessary evaluators must be provided in order to receive a valid
 configuration object.
@@ -14,7 +14,7 @@ arguments to aid in figuring out what the replacement should be.
 
 ## Substitution behaviour
 
-When a template is found within a string, the evaluated template is interpolated into the string.
+When a template is found within a string, the evaluated template is interpolated into that string.
 
 ```yaml
 example_yaml_config: Hello, ${{var.name}}!
@@ -23,7 +23,7 @@ example_yaml_config: Hello, ${{var.name}}!
 would use the `VariableEvaluator` to substitute the substring only. For example, as:
 
 ```yaml
-example_yaml_config: Hello, World!
+example_yaml_config: Hello, Justin!
 ```
 
 When the template is the entire string, then the evaluator is granted more power. For example, you could create

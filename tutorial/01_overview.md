@@ -79,7 +79,7 @@ Evaluators allow the config to resolve templates from various sources and operat
 6. Etc.
 
 > This list is not maintained as a source of truth, and is instead meant to illustrate some bare-bones functionality
-> enabled by using evaluators.
+> enabled by using evaluators. For more information see [Tutorial: Evaluators](./04_evaluators.md)
 
 Templates have a basic pattern: `${{evaluator}}` or optionally `${{evaluator.args}}`. The first part describes which
 evaluator should be used, and the second (optional) part delimited by a dot (`.`) is some argument(s) to pass into the
@@ -100,7 +100,7 @@ subclass, the overrides to apply (as a list of dictionaries), and the list of ev
 
 Pyfig does not generally take ownership of deserializing configuration overrides into dictionaries (e.g., loading a
 json, yaml, etc. into a Python dictionary); this is handled by external libraries like `json` or `pyyaml`.
-Pyfig also does not take (full) ownership for validating the configuration as its converted into a object tree; this
-is instead handled by pydantic.
+Pyfig also does not take (full) ownership for validating the configuration when its converted into a object tree;
+this is handled by pydantic.
 
 Pyfig is focused on overrides and evaluation, and allows external libraries to handle (de)serialization and validation.

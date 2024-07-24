@@ -18,7 +18,7 @@ tasks:
 ```
 
 The above config represents an example (default) config used by some fake application. It's configured to work
-well for development, since it targets local resources. However, when deploying to production, it's necessary to
+well for development since it targets local resources. However, when deploying to production it's necessary to
 specify production-specific settings. Instead of duplicating the config and making the modifications, we can
 instead just adjust the values of interest.
 

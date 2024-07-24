@@ -26,8 +26,9 @@ overrides:
 ```
 
 The evaluators section defines which evaluators you want to use to resolve string templates (e.g., `${{eval.args}}`).
-To use an evaluator, it must be defined here. You can use any Pyfig built-in evaluator, or by providing your own. The
-key roughly equates to an import statement: `pyfig.VariableEvaluator` means `from pyfig import VariableEvaluator`.
+To use an evaluator, it must be defined here. You can use any Pyfig built-in evaluator, or you can implement and
+use your own. The key roughly equates to an import statement: `pyfig.VariableEvaluator` means
+`from pyfig import VariableEvaluator`, and the imported class is constructed with the kwargs specified in the metaconf.
 
 The configs section defines the list of overriding configs to apply to your default config in descending priority
 order. These paths can be absolute or relative.
@@ -35,6 +36,8 @@ order. These paths can be absolute or relative.
 The final section is can be used to apply top-level configuration overrides. Because the overriding configs are
 generally bundled inside the application, this mechanism can be used to apply config-based hot fixes without needing
 to make a full software release.
+
+## Example
 
 ```python
 from pyfig import Pyfig, Metaconf

@@ -43,16 +43,19 @@ class TaskConfig(BaseModel):
 
 class RootConfiguration(Pyfig):
     tasks: List[TaskConfig] = [
-        TaskConfig(task="cleanup"), # default period_seconds
+        TaskConfig(
+            task="cleanup",
+            # default period_seconds
+        ),
         TaskConfig(
             task="monitor",
-            period_seconds=15
-        )
+            period_seconds=15,
+        ),
     ]
     ...
 ```
 
 In the above example it may not make sense to create "duplicated" configuration classes for each task
-(`CleanupTaskConfig`, `MonitorTaskConfig`, ...) because they all follow the same structure. And assume that
+(`CleanupTaskConfig`, `MonitorTaskConfig`, ...) because they all follow the same structure. And if we assume that
 we would never want to load a config rooted at a single `TaskConfig`, then we can define the structure of
 the `TaskConfig` with a `BaseModel`, and then provide defaults within another `Pyfig` class.
