@@ -1,16 +1,35 @@
+import subprocess
 from setuptools import setup, find_packages
 
-def get_version() -> str:
-    with open("pyfig/__init__.py", "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("__version__"):
-                return line.split("=", maxsplit=1)[1].strip(" '\"")
-    raise ValueError("Version not found")
+def git_version() -> str:
+    """
+    If the latest commit is tagged, use that tag. Otherwise use the short commit hash.
+    """
+    try:
+        # Get the latest tag, if available
+        try:
+            tag = subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"]).strip().decode("utf-8")
+        except subprocess.CalledProcessError:
+            tag = None
+
+        if tag:
+            # Check if the current commit is exactly at the tag
+            commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("utf-8")
+            tagged_commit = subprocess.check_output(["git", "rev-list", "-n", "1", tag]).strip().decode("utf-8")
+            if commit == tagged_commit:
+                return tag
+            else:
+                # Return commit hash if not exactly at a tag
+                return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
+        else:
+            # No tags found, return the commit hash
+            return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
+    except subprocess.CalledProcessError:
+        return "err"
 
 setup(
     name="jpyfig",
-    version=get_version(),
+    version=git_version(),
     author="Justin Gray",
     author_email="just1ngray@outlook.com",
     url="https://github.com/just1ngray/pyfig",
