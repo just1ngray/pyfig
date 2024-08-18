@@ -43,4 +43,4 @@ These can be independently installed as necessary.
 ## Tutorial
 
 There is a small tutorial ready to walk you through the features and patterns when using Pyfig.
-[Click me](https://github.com/just1ngray/pyfig/tree/publish-pypi-on-tag/tutorial)
+[Click me](https://github.com/just1ngray/pyfig/tree/master/tutorial)
