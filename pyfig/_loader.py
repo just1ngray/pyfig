@@ -1,3 +1,4 @@
+import typing
 from typing import Type, TypeVar, Dict, Collection
 
 from pydantic import BaseModel, ConfigDict
@@ -14,16 +15,18 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
     applied to each (sub)class.
     """
     class DerivedModel(model):
-        model_config = new_model_config
+        model_config = {**model.model_config, **new_model_config} # type: ignore
 
-    for name, field in model.__fields__.items():
+    for name, field in model.model_fields.items():
+        print(field)
+
         if field.annotation is None:
             continue
 
         if issubclass(field.annotation, BaseModel):
             setattr(DerivedModel, name, _apply_model_config_recursively(field.annotation, new_model_config))
-        else:
-            raise NotImplementedError("Consider some generics like List, Union, etc.")
+        elif typing.get_origin(field.annotation) in [typing.Union, typing.List, typing.Tuple, typing.Dict]:
+            raise NotImplementedError()
 
     return DerivedModel
 
