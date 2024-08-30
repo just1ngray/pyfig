@@ -13,6 +13,8 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
     """
     Creates a distinct class tree which mirrors `model`, but with a particular `model_config`
     applied to each (sub)class.
+
+    If a model already has a config, then the `new_model_config` will be applied as override(s).
     """
     class DerivedModel(model):
         model_config = {**model.model_config, **new_model_config} # type: ignore
