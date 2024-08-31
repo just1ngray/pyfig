@@ -85,11 +85,7 @@ def test__given_nested_with_defaults__when_apply_model_config__then_doesnt_chang
     assert ModifiedNestedModel.model_config == cfgdict
 
     # confirm desired construction behaviour
-    kwargs = {
-        "n": {
-            "dne": "dne does not exist"
-        }
-    }
+    kwargs = { "n": {"dne": "dne does not exist"} }
 
     top_model = TopModel(**kwargs)
     assert top_model.n.nested == True
