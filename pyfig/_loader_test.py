@@ -64,3 +64,35 @@ def test__given_nested_model__when_apply_model_config__then_applies_recursively(
     with pytest.raises(ValidationError):
         ModifiedTopModel(**kwargs)
 
+
+def test__given_nested_with_defaults__when_apply_model_config__then_doesnt_change_default():
+    class NestedModel(BaseModel):
+        nested: bool = True
+
+    class TopModel(BaseModel):
+        n: NestedModel
+
+    cfgdict = ConfigDict(extra="forbid")
+    ModifiedTopModel = _apply_model_config_recursively(TopModel, cfgdict)
+
+    # confirm that the original classes are unmodified
+    assert NestedModel.model_config == ConfigDict()
+    assert TopModel.model_config == ConfigDict()
+
+    # confirm that the new classes have the new config
+    assert ModifiedTopModel.model_config == cfgdict
+    ModifiedNestedModel = ModifiedTopModel.model_fields["n"].annotation
+    assert ModifiedNestedModel.model_config == cfgdict
+
+    # confirm desired construction behaviour
+    kwargs = {
+        "n": {
+            "dne": "dne does not exist"
+        }
+    }
+
+    top_model = TopModel(**kwargs)
+    assert top_model.n.nested == True
+
+    with pytest.raises(ValidationError):
+        ModifiedTopModel(**kwargs)
