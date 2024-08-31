@@ -16,19 +16,22 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
 
     If a model already has a config, then the `new_model_config` will be applied as override(s).
     """
-    class DerivedModel(model):
-        model_config = {**model.model_config, **new_model_config} # type: ignore
-
+    recursive_override_annotations = {}
     for name, field in model.model_fields.items():
-        print(field)
-
         if field.annotation is None:
             continue
 
         if issubclass(field.annotation, BaseModel):
-            setattr(DerivedModel, name, _apply_model_config_recursively(field.annotation, new_model_config))
+            recursive = _apply_model_config_recursively(field.annotation, new_model_config)
+            recursive_override_annotations[name] = recursive
+
         elif typing.get_origin(field.annotation) in [typing.Union, typing.List, typing.Tuple, typing.Dict]:
             raise NotImplementedError()
+
+
+    class DerivedModel(model):
+        model_config = {**model.model_config, **new_model_config} # type: ignore
+        __annotations__ = recursive_override_annotations
 
     return DerivedModel
 
