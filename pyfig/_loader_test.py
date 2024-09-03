@@ -1,4 +1,4 @@
-from typing import Type, List, Union, Dict
+from typing import Type, List, Union, Dict, Set
 from unittest.mock import Mock
 
 import pytest
@@ -12,6 +12,7 @@ from ._loader import _apply_model_config_recursively, _is_generic_type
     Union[int, str],
     Dict[str, int],
     Type[BaseModel],
+    Set[bool],
 ])
 def test__given_generic_type__when_is_generic_type__then_returns_true(t: Type):
     assert _is_generic_type(t)
