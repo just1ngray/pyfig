@@ -1,10 +1,10 @@
-from typing import Type, List, Union, Dict, Set
+from typing import Type, List, Union, Dict, Set, Tuple
 from unittest.mock import Mock
 
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from ._loader import _apply_model_config_recursively, _is_generic_type
+from ._loader import _apply_model_config_recursively, _is_generic_type, _apply_model_config_generic_recursively
 
 
 @pytest.mark.parametrize("t", [
@@ -27,6 +27,74 @@ def test__given_generic_type__when_is_generic_type__then_returns_true(t: Type):
 ])
 def test__given_non_generic__when_is_generic_type__then_returns_false(o: object):
     assert not _is_generic_type(o)
+
+
+@pytest.mark.parametrize("Generic", [
+    List[int],
+    Set[str],
+    Dict[int, float],
+    Union[int, List[str]],
+    Dict[Tuple[int, int], Dict[str, List[int]]],
+])
+def test__given_simple_generic__when_apply_model_config_generic_recursively__then_returns_same(Generic: Type):
+    cfg = ConfigDict(extra="forbid")
+    ModifiedGeneric = _apply_model_config_generic_recursively(Generic, cfg)
+
+    assert ModifiedGeneric == Generic
+
+
+def test__given_list_of_base_model__when_apply_model_config_generic_recursively__then_model_config_set_as_copy():
+    class SimpleModel(BaseModel):
+        foo: int
+        bar: str
+
+    Generic = List[SimpleModel]
+    cfg = ConfigDict(extra="forbid")
+    ModifiedGeneric = _apply_model_config_generic_recursively(Generic, cfg)
+
+    assert Generic == List[SimpleModel]
+    assert Generic.__args__[0].model_config == ConfigDict()
+    assert ModifiedGeneric.__args__[0].model_config == cfg
+
+
+def test__given_complex_recursive_generic__when_apply_model_config_generic_recursively__then_adjusts_copy_deeply():
+    class SomeModel(BaseModel):
+        pass
+
+    Generic = Union[
+        SomeModel,
+        List[SomeModel],
+        Dict[str, SomeModel],
+        Tuple[SomeModel, str, SomeModel],
+    ]
+
+    cfg = ConfigDict(extra="forbid")
+    ModifiedGeneric = _apply_model_config_generic_recursively(Generic, cfg)
+
+    assert Generic == Union[
+        SomeModel,
+        List[SomeModel],
+        Dict[str, SomeModel],
+        Tuple[SomeModel, str, SomeModel],
+    ]
+
+    # SomeModel
+    assert Generic.__args__[0].model_config == ConfigDict()
+    assert ModifiedGeneric.__args__[0].model_config == cfg
+
+    # list[SomeModel]
+    assert Generic.__args__[1].__args__[0].model_config == ConfigDict()
+    assert ModifiedGeneric.__args__[1].__args__[0].model_config == cfg
+
+    # dict[str, SomeModel]
+    assert Generic.__args__[2].__args__[1].model_config == ConfigDict()
+    assert ModifiedGeneric.__args__[2].__args__[1].model_config == cfg
+
+    # tuple[SomeModel, str, SomeModel]
+    assert Generic.__args__[3].__args__[0].model_config == ConfigDict()
+    assert ModifiedGeneric.__args__[3].__args__[0].model_config == cfg
+    assert Generic.__args__[3].__args__[2].model_config == ConfigDict()
+    assert ModifiedGeneric.__args__[3].__args__[2].model_config == cfg
 
 
 def test__given_simple_model__when_apply_model_config_recursively__then_model_config_set():

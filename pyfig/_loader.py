@@ -1,5 +1,6 @@
 import typing
 from typing import Type, TypeVar, Dict, Collection, Any
+from collections import deque, defaultdict
 
 from pydantic import BaseModel, ConfigDict
 
@@ -19,6 +20,52 @@ def _is_generic_type(t: Any) -> bool:
     return hasattr(t, "__origin__") and t.__origin__ is not None
 
 
+def _apply_model_config_generic_recursively(generic: Type, new_model_config: ConfigDict) -> Type:
+    """
+    Given a generic type, applies the `new_model_config` to each `BaseModel` searched recursively.
+
+    Returns:
+        a new copy of the type, but with any applicable `model_config` overrides
+    """
+    if not _is_generic_type(generic):
+        raise TypeError(f"Expected generic type, got {generic}")
+
+    origin = typing.get_origin(generic)
+    args = typing.get_args(generic)
+
+    modified_args = []
+    for arg in args:
+        if _is_generic_type(arg):
+            modified_args.append(_apply_model_config_generic_recursively(arg, new_model_config))
+        elif issubclass(arg, BaseModel):
+            derived = _apply_model_config_recursively(arg, new_model_config)
+            modified_args.append(derived)
+        else:
+            modified_args.append(arg)
+
+    # fixes issues with Python <= 3.8 where types like 'list' are not subscriptable.
+    # here, we must use the typing module instead
+    generic_mapping = {
+        list: typing.List,
+        tuple: typing.Tuple,
+        dict: typing.Dict,
+        set: typing.Set,
+        frozenset: typing.FrozenSet,
+        deque: typing.Deque,
+        defaultdict: typing.DefaultDict,
+        # TODO: are there others?
+    }
+
+    if typing_annotation := generic_mapping.get(origin, None):
+        return typing_annotation[tuple(modified_args)]
+
+    try:
+        return origin[tuple(modified_args)]
+    except TypeError:
+        # FIXME: does this miss edge cases?
+        return generic
+
+
 def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: ConfigDict) -> Type[BaseModel]:
     """
     Creates a distinct class tree which mirrors `model`, but with a particular `model_config`
@@ -31,13 +78,12 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
         if field.annotation is None:
             continue
 
-        if issubclass(field.annotation, BaseModel):
+        if _is_generic_type(field.annotation):
+            generic = _apply_model_config_generic_recursively(field.annotation, new_model_config)
+            recursive_override_annotations[name] = generic
+        elif issubclass(field.annotation, BaseModel):
             recursive = _apply_model_config_recursively(field.annotation, new_model_config)
             recursive_override_annotations[name] = recursive
-
-        elif typing.get_origin(field.annotation) in [typing.Union, typing.List, typing.Tuple, typing.Dict]:
-            raise NotImplementedError()
-
 
     class DerivedModel(model):
         model_config = {**model.model_config, **new_model_config} # type: ignore
