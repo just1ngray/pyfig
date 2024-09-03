@@ -1,7 +1,31 @@
+from typing import Type, List, Union, Dict
+from unittest.mock import Mock
+
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from ._loader import _apply_model_config_recursively
+from ._loader import _apply_model_config_recursively, _is_generic_type
+
+
+@pytest.mark.parametrize("t", [
+    List[int],
+    Union[int, str],
+    Dict[str, int],
+    Type[BaseModel],
+])
+def test__given_generic_type__when_is_generic_type__then_returns_true(t: Type):
+    assert _is_generic_type(t)
+
+
+@pytest.mark.parametrize("o", [
+    True,
+    42,
+    3.14,
+    Mock,
+    Mock(),
+])
+def test__given_non_generic__when_is_generic_type__then_returns_false(o: object):
+    assert not _is_generic_type(o)
 
 
 def test__given_simple_model__when_apply_model_config_recursively__then_model_config_set():

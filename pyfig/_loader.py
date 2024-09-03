@@ -1,5 +1,5 @@
 import typing
-from typing import Type, TypeVar, Dict, Collection
+from typing import Type, TypeVar, Dict, Collection, Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -7,6 +7,16 @@ from ._pyfig import Pyfig
 from ._override import unify_overrides, apply_overrides
 from ._eval import AbstractEvaluator
 from ._evaluate_conf import evaluate_conf
+
+
+def _is_generic_type(t: Any) -> bool:
+    """
+    Checks if a given object is a generic type.
+
+    Returns:
+        true if the object is a generic type, false otherwise
+    """
+    return hasattr(t, "__origin__") and t.__origin__ is not None
 
 
 def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: ConfigDict) -> Type[BaseModel]:
