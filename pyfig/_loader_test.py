@@ -1,5 +1,6 @@
 from typing import Type, List, Union, Dict, Set, Tuple, Literal
 from unittest.mock import Mock
+from copy import deepcopy
 
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -206,7 +207,7 @@ def test__given_config_class_tree__when_load_configuration_without_allow_unused_
         ]
         logging: LoggingConfig = LoggingConfig()
 
-    overrides = [{
+    overrides_with_unused = [{
         "services": [
             {"name": "some-name", "bad-field": True}
         ],
@@ -214,8 +215,11 @@ def test__given_config_class_tree__when_load_configuration_without_allow_unused_
             "level": "DEBUG",
         }
     }]
+    overrides_with_all_used = deepcopy(overrides_with_unused)
+    overrides_with_all_used[0].pop("services")
 
-    _normal_behaviour = load_configuration(MainConfig, overrides, [], allow_unused=True)
+    _normal_behaviour = load_configuration(MainConfig, overrides_with_unused, [], allow_unused=True)
     with pytest.raises(ValidationError):
-        _unused_field_raises = load_configuration(MainConfig, overrides, [], allow_unused=False)
-    _normal_behaviour_preserved = load_configuration(MainConfig, overrides, [], allow_unused=True)
+        _unused_field_raises = load_configuration(MainConfig, overrides_with_unused, [], allow_unused=False)
+    _all_fields_used = load_configuration(MainConfig, overrides_with_all_used, [], allow_unused=False)
+    _normal_behaviour_preserved = load_configuration(MainConfig, overrides_with_unused, [], allow_unused=True)

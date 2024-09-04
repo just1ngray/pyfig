@@ -17,8 +17,15 @@ class Pyfig(BaseModel):
         Validates that all fields have a default value.
         """
         super().__init_subclass__(**kwargs)
+
         for name in cls.__annotations__.keys():
-            if not hasattr(cls, name):
+            # if the pyfig class includes inherited fields, the default may be defined by the parent class
+            found_default = False
+            for pcls in [cls, *cls.__bases__]:
+                if not hasattr(pcls, name):
+                    found_default = True
+                    break
+            if not found_default:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
 
 

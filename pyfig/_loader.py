@@ -20,6 +20,21 @@ def _is_generic_type(t: Any) -> bool:
     return hasattr(t, "__origin__") and t.__origin__ is not None
 
 
+def _issubclass_safe(cls: Type, parent: Type) -> bool:
+    """
+    Checks if `cls` is a subclass of `parent`, without raising any exceptions.
+
+    This is helpful for handling some types like `Literal["foo"]` which is generic but whose arg is not a class.
+
+    Returns:
+        true if `cls` is a subclass of `parent`, false otherwise
+    """
+    try:
+        return issubclass(cls, parent)
+    except TypeError:
+        return False
+
+
 def _apply_model_config_generic_recursively(generic: Type, new_model_config: ConfigDict) -> Type:
     """
     Given a generic type, applies the `new_model_config` to each `BaseModel` searched recursively.
@@ -37,7 +52,7 @@ def _apply_model_config_generic_recursively(generic: Type, new_model_config: Con
     for arg in args:
         if _is_generic_type(arg):
             modified_args.append(_apply_model_config_generic_recursively(arg, new_model_config))
-        elif issubclass(arg, BaseModel):
+        elif _issubclass_safe(arg, BaseModel):
             derived = _apply_model_config_recursively(arg, new_model_config)
             modified_args.append(derived)
         else:
@@ -70,7 +85,7 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
 
     If a model already has a config, then the `new_model_config` will be applied as override(s).
     """
-    recursive_override_annotations = {}
+    recursive_override_annotations: Dict[str, Any] = {}
     for name, field in model.model_fields.items():
         if field.annotation is None:
             continue
@@ -78,7 +93,7 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
         if _is_generic_type(field.annotation):
             generic = _apply_model_config_generic_recursively(field.annotation, new_model_config)
             recursive_override_annotations[name] = generic
-        elif issubclass(field.annotation, BaseModel):
+        elif _issubclass_safe(field.annotation, BaseModel):
             recursive = _apply_model_config_recursively(field.annotation, new_model_config)
             recursive_override_annotations[name] = recursive
 
