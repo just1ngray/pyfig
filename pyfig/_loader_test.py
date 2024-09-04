@@ -15,6 +15,7 @@ from ._loader import load_configuration, _apply_model_config_recursively, _apply
     Dict[str, int],
     Type[BaseModel],
     Set[bool],
+    Literal["foo"],
 ])
 def test__given_generic_type__when_is_generic_type__then_returns_true(t: Type):
     assert _is_generic_type(t)
