@@ -1,4 +1,5 @@
 import json
+import inspect
 
 from pydantic import BaseModel
 
@@ -19,9 +20,9 @@ class Pyfig(BaseModel):
         super().__init_subclass__(**kwargs)
 
         for name in cls.__annotations__.keys():
-            # if the pyfig class includes inherited fields, the default may be defined by the parent class
+            # if the pyfig class has inherited fields (yuck), then the default may be defined by some parent class
             found_default = False
-            for pcls in [cls, *cls.__bases__]:
+            for pcls in inspect.getmro(cls):
                 if not hasattr(pcls, name):
                     found_default = True
                     break
