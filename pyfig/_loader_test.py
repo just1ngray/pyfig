@@ -1,10 +1,12 @@
-from typing import Type, List, Union, Dict, Set, Tuple
+from typing import Type, List, Union, Dict, Set, Tuple, Literal
 from unittest.mock import Mock
 
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from ._loader import _apply_model_config_recursively, _is_generic_type, _apply_model_config_generic_recursively
+from ._pyfig import Pyfig
+from ._loader import load_configuration, _apply_model_config_recursively, _apply_model_config_generic_recursively, \
+                     _is_generic_type
 
 
 @pytest.mark.parametrize("t", [
@@ -185,3 +187,34 @@ def test__given_nested_with_defaults__when_apply_model_config__then_doesnt_chang
 
     with pytest.raises(ValidationError):
         ModifiedTopModel(**kwargs)
+
+
+def test__given_config_class_tree__when_load_configuration_without_allow_unused__then_raises_when_unused_fields():
+    class LoggingConfig(Pyfig):
+        level: str = "INFO"
+        file: Union[Literal["stdout"], Literal["stderr"]] = "stdout"
+
+    class GenericConfigurableService(BaseModel):
+        name: str
+        enabled: bool = True
+
+    class MainConfig(Pyfig):
+        services: List[GenericConfigurableService] = [
+            GenericConfigurableService(name="important_job"),
+            GenericConfigurableService(name="health"),
+        ]
+        logging: LoggingConfig = LoggingConfig()
+
+    overrides = [{
+        "services": [
+            {"name": "some-name", "bad-field": True}
+        ],
+        "logging": {
+            "level": "DEBUG",
+        }
+    }]
+
+    _normal_behaviour = load_configuration(MainConfig, overrides, [], allow_unused=True)
+    with pytest.raises(ValidationError):
+        _unused_field_raises = load_configuration(MainConfig, overrides, [], allow_unused=False)
+    _normal_behaviour_preserved = load_configuration(MainConfig, overrides, [], allow_unused=True)
