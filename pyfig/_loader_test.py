@@ -209,11 +209,9 @@ def test__given_config_class_tree__when_load_configuration_without_allow_unused_
 
     overrides_with_unused = [{
         "services": [
-            {"name": "some-name", "bad-field": True}
+            { "name": "some-name", "bad-field": True }
         ],
-        "logging": {
-            "level": "DEBUG",
-        }
+        "logging": { "level": "DEBUG" }
     }]
     overrides_with_all_used = deepcopy(overrides_with_unused)
     overrides_with_all_used[0].pop("services")
