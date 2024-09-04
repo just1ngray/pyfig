@@ -43,9 +43,9 @@ def _apply_model_config_generic_recursively(generic: Type, new_model_config: Con
         else:
             modified_args.append(arg)
 
-    # fixes issues with Python <= 3.8 where types like 'list' are not subscriptable.
-    # here, we must use the typing module instead
-    generic_mapping = {
+    # In Python <= 3.8, types like 'list' are not subscriptable, and must be typed using the typing module.
+    # This mapping enables us to reconstruct these types in older versions of Python
+    old_python_typing_mapping: Dict[Type, Any] = {
         list: typing.List,
         tuple: typing.Tuple,
         dict: typing.Dict,
@@ -53,17 +53,14 @@ def _apply_model_config_generic_recursively(generic: Type, new_model_config: Con
         frozenset: typing.FrozenSet,
         deque: typing.Deque,
         defaultdict: typing.DefaultDict,
-        # TODO: are there others?
     }
-
-    if typing_annotation := generic_mapping.get(origin, None):
+    if typing_annotation := old_python_typing_mapping.get(origin, None):
         return typing_annotation[tuple(modified_args)]
 
     try:
         return origin[tuple(modified_args)]
-    except TypeError:
-        # FIXME: does this miss edge cases?
-        return generic
+    except TypeError as exc:
+        raise TypeError(f"Could not reconstruct generic type {generic}") from exc
 
 
 def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: ConfigDict) -> Type[BaseModel]:
