@@ -1,7 +1,7 @@
 import json
-import inspect
 
 from pydantic import BaseModel
+from pydantic_core import PydanticUndefined
 
 
 class Pyfig(BaseModel):
@@ -13,20 +13,14 @@ class Pyfig(BaseModel):
     """
 
     @classmethod
-    def __init_subclass__(cls, **kwargs):
+    def __pydantic_init_subclass__(cls, **kwargs):
         """
         Validates that all fields have a default value.
         """
-        super().__init_subclass__(**kwargs)
+        super().__pydantic_init_subclass__(**kwargs) # FIXME: do i need to call this?
 
-        for name in cls.__annotations__.keys():
-            # if the pyfig class has inherited fields (yuck), then the default may be defined by some parent class
-            found_default = False
-            for pcls in inspect.getmro(cls):
-                if not hasattr(pcls, name):
-                    found_default = True
-                    break
-            if not found_default:
+        for name, field in cls.model_fields.items():
+            if field.get_default() == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
 
 

@@ -1,6 +1,7 @@
 import typing
 from typing import Type, TypeVar, Dict, Collection, Any
 from collections import deque, defaultdict
+from copy import deepcopy
 
 from pydantic import BaseModel, ConfigDict
 
@@ -85,23 +86,26 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
 
     If a model already has a config, then the `new_model_config` will be applied as override(s).
     """
-    recursive_override_annotations: Dict[str, Any] = {}
+    overrides = {
+        "model_config": {**model.model_config, **new_model_config},
+        "__module__": model.__module__,
+        "__annotations__": deepcopy(model.__annotations__),
+    }
+
     for name, field in model.model_fields.items():
+        overrides[name] = field.get_default()
+
         if field.annotation is None:
             continue
 
         if _is_generic_type(field.annotation):
             generic = _apply_model_config_generic_recursively(field.annotation, new_model_config)
-            recursive_override_annotations[name] = generic
+            overrides["__annotations__"][name] = generic
         elif _issubclass_safe(field.annotation, BaseModel):
             recursive = _apply_model_config_recursively(field.annotation, new_model_config)
-            recursive_override_annotations[name] = recursive
+            overrides["__annotations__"][name] = recursive
 
-    class DerivedModel(model):
-        model_config = {**model.model_config, **new_model_config} # type: ignore
-        __annotations__ = recursive_override_annotations
-
-    return DerivedModel
+    return type(f"Derived{model.__class__.__name__}", (model,), overrides)
 
 
 T = TypeVar("T", bound=Pyfig)
