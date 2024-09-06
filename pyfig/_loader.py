@@ -46,13 +46,14 @@ def _apply_model_config_generic_recursively(generic: Type, new_model_config: Con
     if not _is_generic_type(generic):
         raise TypeError(f"Expected generic type, got {generic}")
 
-    origin = typing.get_origin(generic)
+    origin: Any = typing.get_origin(generic) # cannot be none because of _is_generic_type check
     args = typing.get_args(generic)
 
     modified_args = []
     for arg in args:
         if _is_generic_type(arg):
-            modified_args.append(_apply_model_config_generic_recursively(arg, new_model_config))
+            generic = _apply_model_config_generic_recursively(arg, new_model_config)
+            modified_args.append(generic)
         elif _issubclass_safe(arg, BaseModel):
             derived = _apply_model_config_recursively(arg, new_model_config)
             modified_args.append(derived)
@@ -88,8 +89,8 @@ def _apply_model_config_recursively(model: Type[BaseModel], new_model_config: Co
     """
     overrides = {
         "model_config": {**model.model_config, **new_model_config},
-        "__module__": model.__module__,
         "__annotations__": deepcopy(model.__annotations__),
+        "__module__": model.__module__,
     }
 
     for name, field in model.model_fields.items():
@@ -125,8 +126,9 @@ def load_configuration(
         default:        the default configuration type
         overrides:      the configuration overrides (descending priority)
         evaluators:     the evaluators to consult
-        allow_unused:   true if fields in overriding dictionaries can be unused if they are not required;
-                        false means that unused override fields will raise validation errors
+        allow_unused:   when false, validation errors will be raised for unused override keys
+                        (this simply adds `model_config["extra"] = "forbid"` to each pydantic model)
+                        by default, unused keys are ignored
 
     Returns:
         the loaded configuration
