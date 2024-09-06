@@ -17,8 +17,6 @@ class Pyfig(BaseModel):
         """
         Validates that all fields have a default value.
         """
-        super().__pydantic_init_subclass__(**kwargs) # FIXME: do i need to call this?
-
         for name, field in cls.model_fields.items():
             if field.get_default() == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
