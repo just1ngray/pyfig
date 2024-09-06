@@ -60,6 +60,11 @@ def test__given_not_a_class__when_issubclass_safe__then_returns_false():
     assert not _issubclass_safe(A(), A)
 
 
+def test__given_not_a_generic__when_apply_model_config_generic_recursively__then_raises_type_error():
+    with pytest.raises(TypeError):
+        _apply_model_config_generic_recursively(int, ConfigDict())
+
+
 @pytest.mark.parametrize("Generic", [
     List[int],
     Set[str],
@@ -96,7 +101,7 @@ def test__given_complex_recursive_generic__when_apply_model_config_generic_recur
         SomeModel,
         List[SomeModel],
         Dict[str, SomeModel],
-        Tuple[SomeModel, str, SomeModel],
+        Tuple[SomeModel, str, Tuple[SomeModel, SomeModel]],
     ]
 
     cfg = ConfigDict(extra="forbid")
@@ -106,7 +111,7 @@ def test__given_complex_recursive_generic__when_apply_model_config_generic_recur
         SomeModel,
         List[SomeModel],
         Dict[str, SomeModel],
-        Tuple[SomeModel, str, SomeModel],
+        Tuple[SomeModel, str, Tuple[SomeModel, SomeModel]],
     ]
 
     # SomeModel
@@ -121,11 +126,19 @@ def test__given_complex_recursive_generic__when_apply_model_config_generic_recur
     assert Generic.__args__[2].__args__[1].model_config == ConfigDict()
     assert ModifiedGeneric.__args__[2].__args__[1].model_config == cfg
 
-    # tuple[SomeModel, str, SomeModel]
-    assert Generic.__args__[3].__args__[0].model_config == ConfigDict()
-    assert ModifiedGeneric.__args__[3].__args__[0].model_config == cfg
-    assert Generic.__args__[3].__args__[2].model_config == ConfigDict()
-    assert ModifiedGeneric.__args__[3].__args__[2].model_config == cfg
+    # tuple[SomeModel, str, Tuple[SomeModel, SomeModel]]
+    for some_model in [
+        Generic.__args__[3].__args__[0],
+        Generic.__args__[3].__args__[2].__args__[0],
+        Generic.__args__[3].__args__[2].__args__[1]
+    ]:
+        assert some_model.model_config == ConfigDict()
+    for modified_some_model in [
+        ModifiedGeneric.__args__[3].__args__[0],
+        ModifiedGeneric.__args__[3].__args__[2].__args__[0],
+        ModifiedGeneric.__args__[3].__args__[2].__args__[1]
+    ]:
+        assert modified_some_model.model_config == cfg
 
 
 def test__given_simple_model__when_apply_model_config_recursively__then_model_config_set():
@@ -181,10 +194,10 @@ def test__given_nested_model__when_apply_model_config__then_applies_recursively(
     kwargs = {
         "n": {
             "nested": True,
-            "dne": "dne does not exist"
+            "dne": "<< this field does not exist"
         }
     }
-    _no_raise = TopModel(**kwargs)
+    _dne_field_is_ignored = TopModel(**kwargs)
     with pytest.raises(ValidationError):
         ModifiedTopModel(**kwargs)
 
@@ -212,7 +225,7 @@ def test__given_nested_with_defaults__when_apply_model_config__then_doesnt_chang
     kwargs = { "n": {"dne": "dne does not exist"} }
 
     top_model = TopModel(**kwargs)
-    assert top_model.n.nested == True
+    assert top_model.n.nested is True
 
     with pytest.raises(ValidationError):
         ModifiedTopModel(**kwargs)
@@ -234,17 +247,17 @@ def test__given_config_class_tree__when_load_configuration_without_allow_unused_
         ]
         logging: LoggingConfig = LoggingConfig()
 
-    overrides_with_unused = [{
+    override_all_used = {
         "services": [
-            { "name": "some-name", "bad-field": True }
+            { "name": "some-name" }
         ],
         "logging": { "level": "DEBUG" }
-    }]
-    overrides_with_all_used = deepcopy(overrides_with_unused)
-    overrides_with_all_used[0].pop("services")
+    }
+    override_with_extra = deepcopy(override_all_used)
+    override_with_extra["services"][0]["bad-field"] = True
 
-    _normal_behaviour = load_configuration(MainConfig, overrides_with_unused, [], allow_unused=True)
+    _normal_behaviour_ignores_extra = load_configuration(MainConfig, [override_with_extra], [], allow_unused=True)
     with pytest.raises(ValidationError):
-        _unused_field_raises = load_configuration(MainConfig, overrides_with_unused, [], allow_unused=False)
-    _all_fields_used = load_configuration(MainConfig, overrides_with_all_used, [], allow_unused=False)
-    _normal_behaviour_preserved = load_configuration(MainConfig, overrides_with_unused, [], allow_unused=True)
+        _unused_field_raises = load_configuration(MainConfig, [override_with_extra], [], allow_unused=False)
+    _still_loaded_when_no_extra = load_configuration(MainConfig, [override_all_used], [], allow_unused=False)
+    _normal_behaviour_preserved = load_configuration(MainConfig, [override_with_extra], [], allow_unused=True)
