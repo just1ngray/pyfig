@@ -21,7 +21,7 @@ def _is_generic_type(t: Any) -> bool:
     return hasattr(t, "__origin__") and t.__origin__ is not None
 
 
-def _issubclass_safe(cls: Type, parent: Type) -> bool:
+def _issubclass_safe(cls: Any, parent: Type) -> bool:
     """
     Checks if `cls` is a subclass of `parent`, without raising any exceptions.
 

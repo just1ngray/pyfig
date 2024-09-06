@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 
 from ._pyfig import Pyfig
 from ._loader import load_configuration, _apply_model_config_recursively, _apply_model_config_generic_recursively, \
-                     _is_generic_type
+                     _is_generic_type, _issubclass_safe
 
 
 @pytest.mark.parametrize("t", [
@@ -31,6 +31,33 @@ def test__given_generic_type__when_is_generic_type__then_returns_true(t: Type):
 ])
 def test__given_non_generic__when_is_generic_type__then_returns_false(o: object):
     assert not _is_generic_type(o)
+
+
+def test__given_b_subclass_of_a__when_issubclass_safe__then_returns_true():
+    class A:
+        pass
+
+    class B(A):
+        pass
+
+    assert _issubclass_safe(B, A)
+
+
+def test__given_b_not_subclass_of_a__when_issubclass_safe__then_returns_false():
+    class A:
+        pass
+
+    class B:
+        pass
+
+    assert not _issubclass_safe(B, A)
+
+
+def test__given_not_a_class__when_issubclass_safe__then_returns_false():
+    class A:
+        pass
+
+    assert not _issubclass_safe(A(), A)
 
 
 @pytest.mark.parametrize("Generic", [
