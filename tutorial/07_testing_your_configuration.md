@@ -33,6 +33,6 @@ def test__given_overriding_config__when_disallow_unused__then_config_is_loaded(o
         default=MyRootConfig,
         overrides=[overriding_dict],
         evaluators=[],
-        allow_unused=False
+        allow_unused=False # this is the important bit - default is True, which allows unused fields to exist
     )
 ```
