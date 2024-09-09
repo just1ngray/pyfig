@@ -12,7 +12,8 @@ Example [pytest](https://docs.pytest.org/en/stable/):
 
 ```python
 def test__given_no_evaluator_or_overrides__when_load_configuration__then_defaults_are_used():
-    _no_validation_error = load_configuration(MyRootConfig, [], [])
+    _no_validation_error = MyRootConfig()
+    _via_load_configuration = load_configuration(MyRootConfig, [], [])
 ```
 
 ## Overriding Configs Override Real Fields
