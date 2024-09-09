@@ -8,7 +8,7 @@ can go anywhere near your class tree definition module(s).
 Even if your config includes advanced environment-specific evaluators (like reading environment variables), it's still
 important to test that your default config can be loaded independently.
 
-Example [pytest](https://docs.pytest.org/en/stable/):
+Example using [pytest](https://docs.pytest.org/en/stable/):
 
 ```python
 def test__given_no_evaluator_or_overrides__when_load_configuration__then_defaults_are_used():
@@ -23,7 +23,7 @@ some point which cause existing override files to no longer override real fields
 fields are ignored (See: `load_configuration(...)`'s `allow_unused` kwarg.). However, if we are more strict in testing,
 we can catch these outdated configuration files before releasing.
 
-Example [pytest](https://docs.pytest.org/en/stable/):
+Example using [pytest](https://docs.pytest.org/en/stable/):
 
 ```python
 @pytest.mark.parametrize("overriding_path", Path("...").glob("**/*.yaml"))
