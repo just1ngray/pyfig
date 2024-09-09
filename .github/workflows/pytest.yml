@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  install-and-pytest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
