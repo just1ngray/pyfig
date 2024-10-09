@@ -1,6 +1,7 @@
 import json
 
 from pydantic import BaseModel
+from pydantic_core import PydanticUndefined
 
 
 class Pyfig(BaseModel):
@@ -12,13 +13,12 @@ class Pyfig(BaseModel):
     """
 
     @classmethod
-    def __init_subclass__(cls, **kwargs):
+    def __pydantic_init_subclass__(cls, **kwargs):
         """
         Validates that all fields have a default value.
         """
-        super().__init_subclass__(**kwargs)
-        for name in cls.__annotations__.keys():
-            if not hasattr(cls, name):
+        for name, field in cls.model_fields.items():
+            if field.get_default() == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
 
 
