@@ -66,6 +66,9 @@ def test__given_not_a_generic__when_apply_model_config_generic_recursively__then
 
 
 @pytest.mark.parametrize("Generic", [
+    List,
+    Set,
+    Dict,
     List[int],
     Set[str],
     Dict[int, float],

@@ -48,6 +48,9 @@ def _apply_model_config_generic_recursively(generic: Type, new_model_config: Con
 
     origin: Any = typing.get_origin(generic) # cannot be none because of _is_generic_type check
     args = typing.get_args(generic)
+    if len(args) == 0:
+        # unspecific generic type is used. e.g., plain List, Dict, etc. (without type arguments)
+        return generic
 
     modified_args = []
     for arg in args:
