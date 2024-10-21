@@ -16,6 +16,17 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
+
+    - name: Verify setup.py version matches Git tag
+      run: |
+        tag=${GITHUB_REF#refs/tags/v}
+        version=$(python3 setup.py --version)
+        if [ "$tag" != "$version" ]; then
+          echo "Git tag ($tag) does not match version in setup.py ($version)"
+          exit 1
+        fi
+      shell: bash
+
     - name: Install pypa/build
       run: >-
         python3 -m
