@@ -19,6 +19,7 @@ jobs:
 
     - name: Verify setup.py version matches Git tag
       run: |
+        python3 -m pip install setuptools
         tag=${GITHUB_REF#refs/tags/v}
         version=$(python3 setup.py --version)
         if [ "$tag" != "$version" ]; then
@@ -28,11 +29,8 @@ jobs:
       shell: bash
 
     - name: Install pypa/build
-      run: >-
-        python3 -m
-        pip install
-        build
-        --user
+      run: |
+        python3 -m pip install build --user
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Store the distribution packages
