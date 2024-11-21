@@ -50,3 +50,8 @@ def test__given_pyfig_with_non_standard_types__when_model_dump_dict__then_return
         "none": None,
         "enumeration": "variant1"
     }
+
+def test__given_invalid_default__when_defining_pyfig_class__then_raises_error():
+    with pytest.raises(TypeError):
+        class _MyConfig(Pyfig):
+            bad_default_value: int = "not an integer"
