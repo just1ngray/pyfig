@@ -1,6 +1,6 @@
 import json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from pydantic_core import PydanticUndefined
 
 
@@ -15,11 +15,29 @@ class Pyfig(BaseModel):
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs):
         """
-        Validates that all fields have a default value.
+        Validates that all fields have a valid default value
         """
+        kwargs = {}
+
         for name, field in cls.model_fields.items():
-            if field.get_default() == PydanticUndefined:
+            default = field.get_default()
+            if default == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
+
+            kwargs[name] = default
+
+        # FIXME: when we are using load_configuration(allow_unused=False), the defaults are no longer valid somehow
+        if cls.model_config.get("extra", None) == "forbid":
+            return
+
+        # try constructing the class with each of the default values to ensure they are valid
+        #
+        # pydantic can validate defaults on instance __init__, but this elevates the check to the definition
+        # of the config itself
+        try:
+            cls(**kwargs)
+        except ValidationError as e:
+            raise TypeError("All default values must be valid") from e
 
 
     def model_dump_dict(self) -> dict:
