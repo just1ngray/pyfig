@@ -17,8 +17,11 @@ class Pyfig(BaseModel):
         """
         Validates that all fields have a valid default value
         """
-        kwargs = {}
+        # only validate the defaults once
+        if getattr(cls, "_pyfig_defaults_validated", False):
+            return
 
+        kwargs = {}
         for name, field in cls.model_fields.items():
             default = field.get_default()
             if default == PydanticUndefined:
@@ -26,16 +29,13 @@ class Pyfig(BaseModel):
 
             kwargs[name] = default
 
-        # FIXME: when we are using load_configuration(allow_unused=False), the defaults are no longer valid somehow
-        if cls.model_config.get("extra", None) == "forbid":
-            return
-
         # try constructing the class with each of the default values to ensure they are valid
         #
         # pydantic can validate defaults on instance __init__, but this elevates the check to the definition
         # of the config itself
         try:
             cls(**kwargs)
+            cls._pyfig_defaults_validated = True
         except ValidationError as e:
             raise TypeError("All default values must be valid") from e
 
