@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="jpyfig",
-    version="0.2.0",
+    version="0.2.1",
     author="Justin Gray",
     author_email="just1ngray@outlook.com",
     url="https://github.com/just1ngray/pyfig",
