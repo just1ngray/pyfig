@@ -1,6 +1,6 @@
 import json
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict
 from pydantic_core import PydanticUndefined
 
 
@@ -12,32 +12,25 @@ class Pyfig(BaseModel):
     See: https://docs.pydantic.dev/latest/api/base_model/ for more information on validation, serialization, etc.
     """
 
+    model_config = ConfigDict(validate_default=True)
+
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs):
         """
-        Validates that all fields have a valid default value
+        Validates that all fields have a default value.
         """
-        # only validate the defaults once
-        if getattr(cls, "_pyfig_defaults_validated", False):
-            return
-
-        kwargs = {}
         for name, field in cls.model_fields.items():
-            default = field.get_default()
-            if default == PydanticUndefined:
+            if field.get_default() == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
 
-            kwargs[name] = default
-
-        # try constructing the class with each of the default values to ensure they are valid
-        #
-        # pydantic can validate defaults on instance __init__, but this elevates the check to the definition
-        # of the config itself
-        try:
-            cls(**kwargs)
-            cls._pyfig_defaults_validated = True
-        except ValidationError as e:
-            raise TypeError("All default values must be valid") from e
+        # Construct the class once to see if the defaults are valid.
+        # 1. This makes defining a Pyfig class with bad defaults raise a ValidationError, rather than waiting for an
+        #    instance of the class to be constructed.
+        # 2. _pyfig_defaults_validated is set so we only validate the class's defaults once. This prevents issues with
+        #    Derived* classes with different model config
+        if not hasattr(cls, "_pyfig_defaults_validated"):
+            cls()
+            setattr(cls, "_pyfig_defaults_validated", True)
 
 
     def model_dump_dict(self) -> dict:

@@ -3,6 +3,7 @@ from pathlib import Path
 from enum import Enum
 
 import pytest
+from pydantic import ValidationError, ConfigDict
 
 from ._pyfig import Pyfig
 
@@ -52,6 +53,17 @@ def test__given_pyfig_with_non_standard_types__when_model_dump_dict__then_return
     }
 
 def test__given_invalid_default__when_defining_pyfig_class__then_raises_error():
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         class _MyConfig(Pyfig):
             bad_default_value: int = "not an integer"
+
+def test__given_invalid_default__when_defining_pyfig_class_with_config__then_raises_error():
+    with pytest.raises(ValidationError):
+        class _MyConfig(Pyfig):
+            model_config = ConfigDict(frozen=True)
+            bad_default_value: int = "not an integer"
+
+def test__given_model_config_validate_default_false__when_defining_pyfig_class__then_no_error():
+    class _MyConfig(Pyfig):
+        model_config = ConfigDict(validate_default=False)
+        bad_default_value: int = "not an integer"
