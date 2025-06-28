@@ -112,6 +112,16 @@ def test__given_list_element_override__when_unify_overrides__then_only_that_elem
     unified = unify_overrides(override, config)
     assert unified == { "list": [1, 4, 3] }
 
+def test__given_list_element_overrides__when_unify_overrides__then_all_elements_are_overridden():
+    base_config = { "list": [1, 2, 3, 4, 5] }
+    override_first = { "list": { "0": 10 } }
+    override_even = { "list": {
+        "2": 30,
+        "4": 50,
+    }}
+    unified = unify_overrides(override_first, override_even, base_config)
+    assert unified == { "list": [10, 2, 30, 4, 50] }
+
 def test__given_empty_dict__when_override_with_stuff__then_sets_anyway():
     empty_dict = {}
     override = { "a": 1 }

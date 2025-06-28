@@ -17,17 +17,20 @@ def unify_overrides(*overrides: Dict) -> Dict:
 
     for override in reversed(overrides):
         for key, value in override.items():
-            # recursive unify
+            # recursive override at lower dict level
             if key in unified and isinstance(value, dict) and isinstance(unified[key], dict):
                 unified[key] = unify_overrides(value, unified[key])
                 continue
 
-            # override a list element
-            if key in unified and isinstance(unified[key], list) and isinstance(value, dict) and len(value) == 1:
-                list_index = str(next(iter(value)))
-                if list_index.isdigit():
-                    unified[key][int(list_index)] = value[list_index]
-                    continue
+            # override a list element: if we are targeting a list with an override like { "n": X }, then index n
+            # should be assigned X
+            if key in unified and isinstance(unified[key], list) and isinstance(value, dict):
+                element_idx: str
+                for element_idx, element_override in value.items():
+                    if not element_idx.isdigit():
+                        raise ValueError(f"TODO")
+                    unified[key][int(element_idx)] = element_override
+                continue
 
             # plain assignment
             unified[key] = value
