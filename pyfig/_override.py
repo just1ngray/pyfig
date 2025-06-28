@@ -27,9 +27,13 @@ def unify_overrides(*overrides: Dict) -> Dict:
             if key in unified and isinstance(unified[key], list) and isinstance(value, dict):
                 element_idx: str
                 for element_idx, element_override in value.items():
-                    if not element_idx.isdigit():
-                        raise ValueError(f"TODO")
-                    unified[key][int(element_idx)] = element_override
+                    try:
+                        unified[key][int(element_idx)] = element_override
+                    except ValueError:
+                        raise ValueError(f"Error applying override to index in list. '{element_idx}' is not an integer")
+                    except IndexError:
+                        raise IndexError(f"Error applying override to out of bounds index {element_idx}. "
+                                         f"List is only {len(unified[key])} elements long")
                 continue
 
             # plain assignment

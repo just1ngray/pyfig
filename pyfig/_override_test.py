@@ -1,3 +1,5 @@
+import pytest
+
 from ._override import unify_overrides, apply_overrides
 
 
@@ -121,6 +123,31 @@ def test__given_list_element_overrides__when_unify_overrides__then_all_elements_
     }}
     unified = unify_overrides(override_first, override_even, base_config)
     assert unified == { "list": [10, 2, 30, 4, 50] }
+
+def test__given_negative_list_element_override__when_unify_overrides__then_indexes_backwards():
+    base_config = { "list": [1, 2, 3, 4, 5] }
+    override = { "list": { "-1": 50 } }
+    unified = unify_overrides(override, base_config)
+    assert unified == { "list": [1, 2, 3, 4, 50] }
+
+@pytest.mark.parametrize("nondigit", [
+    "",
+    "foo",
+    "3.14",
+    "True",
+    "1e3",
+])
+def test__given_not_digit_string_list_element_override__when_unify_overrides__then_raises_valueerror(nondigit: str):
+    base_config = { "list": [1, 2, 3, 4, 5] }
+    override = { "list": { nondigit: 99 } }
+    with pytest.raises(ValueError):
+        unify_overrides(override, base_config)
+
+def test__given_large_index_list_element_override__when_unify_overrides__then_raises_indexerror():
+    base_config = { "list": [1, 2, 3] }
+    override = { "list": { "99": "index out of bounds" } }
+    with pytest.raises(IndexError):
+        unify_overrides(override, base_config)
 
 def test__given_empty_dict__when_override_with_stuff__then_sets_anyway():
     empty_dict = {}
