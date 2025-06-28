@@ -2,6 +2,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from ._pyfig import Pyfig
 from ._eval import AbstractEvaluator
@@ -237,3 +238,20 @@ def test__given_metaconf__when_load_config__then_loads_files_and_calls_load_conf
     assert result.a == 10
     assert result.b == "bear"
     assert result.c == 3.14
+
+def test__given_metaconf__when_load_config_disallow_unused__then_calls_load_configuration_with_allow_unused_false():
+    class TargetConf(Pyfig):
+        pass
+
+    metaconf = Metaconf(
+        configs=[],
+        evaluators=[],
+        overrides={ "not_a_key": "Should raise when allow_unused=False" }
+    )
+
+    # it should ignore ok
+    assert isinstance(metaconf.load_config(TargetConf), TargetConf)
+
+    # but with allow_unused=False it should raise a ValidationError
+    with pytest.raises(ValidationError):
+        metaconf.load_config(TargetConf, allow_unused=False)

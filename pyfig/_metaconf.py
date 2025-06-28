@@ -166,9 +166,16 @@ class Metaconf:
             configs=configs
         )
 
-    def load_config(self, target: Type[T]) -> T:
+    def load_config(self, target: Type[T], **kwargs) -> T:
         """
         Use the meta configuration to load your application's configuration.
+
+        Args:
+            target: the config class to build
+
+        Kwargs:
+            Any additional keyword arguments to pass into `load_configuration`.
+            See: `pyfig.load_configuration` for more details on the available options.
         """
         configs = [_load_dict(config) for config in self.configs]
-        return load_configuration(target, [self.overrides, *configs], self.evaluators)
+        return load_configuration(target, [self.overrides, *configs], self.evaluators, **kwargs)
