@@ -1,6 +1,7 @@
 import json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic_core import PydanticUndefined
 
 
 class Pyfig(BaseModel):
@@ -11,15 +12,25 @@ class Pyfig(BaseModel):
     See: https://docs.pydantic.dev/latest/api/base_model/ for more information on validation, serialization, etc.
     """
 
+    model_config = ConfigDict(validate_default=True)
+
     @classmethod
-    def __init_subclass__(cls, **kwargs):
+    def __pydantic_init_subclass__(cls, **kwargs):
         """
         Validates that all fields have a default value.
         """
-        super().__init_subclass__(**kwargs)
-        for name in cls.__annotations__.keys():
-            if not hasattr(cls, name):
+        for name, field in cls.model_fields.items():
+            if field.get_default() == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
+
+        # Construct the class once to see if the defaults are valid.
+        # 1. This makes defining a Pyfig class with bad defaults raise a ValidationError, rather than waiting for an
+        #    instance of the class to be constructed.
+        # 2. _pyfig_defaults_validated is set so we only validate the class's defaults once. This prevents issues with
+        #    Derived* classes with different model config
+        if not hasattr(cls, "_pyfig_defaults_validated"):
+            cls()
+            setattr(cls, "_pyfig_defaults_validated", True)
 
 
     def model_dump_dict(self) -> dict:
