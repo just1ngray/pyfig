@@ -1,4 +1,15 @@
-from typing import Dict
+from typing import Dict, Any
+
+
+def _list_element_override_with_error_messaging(src: list, index: Any, override: Any):
+    try:
+        src[int(index)] = override
+    except ValueError:
+        raise ValueError(f"Error applying override to index in list. '{index}' is not an integer")
+    except IndexError:
+        raise IndexError(
+            f"Error applying override to out of bounds index {index}. List is only {len(src)} elements long"
+        )
 
 
 def unify_overrides(*overrides: Dict) -> Dict:
@@ -25,15 +36,8 @@ def unify_overrides(*overrides: Dict) -> Dict:
             # override a list element: if we are targeting a list with an override like { "n": X }, then index n
             # should be assigned X
             if key in unified and isinstance(unified[key], list) and isinstance(value, dict):
-                element_idx: str
                 for element_idx, element_override in value.items():
-                    try:
-                        unified[key][int(element_idx)] = element_override
-                    except ValueError:
-                        raise ValueError(f"Error applying override to index in list. '{element_idx}' is not an integer")
-                    except IndexError:
-                        raise IndexError(f"Error applying override to out of bounds index {element_idx}. "
-                                         f"List is only {len(unified[key])} elements long")
+                    _list_element_override_with_error_messaging(unified[key], element_idx, element_override)
                 continue
 
             # plain assignment
@@ -61,5 +65,8 @@ def apply_overrides(conf: Dict, override: Dict, trace: str="") -> None:
             conf[key] = value
         elif isinstance(conf[key], dict) and isinstance(value, dict):
             apply_overrides(conf[key], value, trace=f"{trace}.{key}")
+        elif isinstance(conf[key], list) and isinstance(value, dict):
+            for idx, override_element in value.items():
+                _list_element_override_with_error_messaging(conf[key], idx, override_element)
         else:
             conf[key] = value

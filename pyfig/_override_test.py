@@ -256,3 +256,34 @@ def test__given_nested_conf__when_override_unknown_nested_key__then_sets_anyway(
         },
         "level": 3
     }
+
+@pytest.mark.parametrize("idx", [1, "1"])
+def test__given_list_element_override__when_apply_overrides__then_only_that_element_is_overridden(idx):
+    config  = { "list": [1, 2, 3] }
+    apply_overrides(config, { "list": {idx: 4} })
+    assert config == { "list": [1, 4, 3] }
+
+def test__given_list_element_overrides__when_apply_overrides__then_all_elements_are_overridden():
+    config = { "list": [1, 2, 3, 4, 5] }
+    apply_overrides(config, { "list": {
+        "0": 10,
+        -1: 50,
+    }})
+    assert config == { "list": [10, 2, 3, 4, 50] }
+
+@pytest.mark.parametrize("nondigit", [
+    "",
+    "foo",
+    "3.14",
+    "True",
+    "1e3",
+])
+def test__given_not_digit_string_list_element_override__when_apply_overrides__then_raises_valueerror(nondigit: str):
+    config = { "list": [1, 2, 3, 4, 5] }
+    with pytest.raises(ValueError):
+        apply_overrides(config, { "list": { nondigit: 99 } })
+
+def test__given_large_index_list_element_override__when_unify_overrides__then_raises_indexerror():
+    config = { "list": [1, 2, 3] }
+    with pytest.raises(IndexError):
+        apply_overrides(config, { "list": { 99: "index out of bounds" } })
