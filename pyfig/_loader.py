@@ -6,7 +6,7 @@ from copy import deepcopy
 from pydantic import BaseModel, ConfigDict
 
 from ._pyfig import Pyfig
-from ._override import unify_overrides, apply_overrides
+from ._override import unify_overrides
 from ._eval import AbstractEvaluator
 from ._evaluate_conf import evaluate_conf
 
@@ -139,9 +139,8 @@ def load_configuration(
     Raises:
         when the configuration cannot be built
     """
-    conf = default().model_dump()
-    unified_overrides = unify_overrides(*overrides)
-    apply_overrides(conf, unified_overrides)
+    defaults = default().model_dump()
+    conf = unify_overrides(*overrides, defaults)
     evaluate_conf(conf, evaluators)
 
     if not allow_unused:
