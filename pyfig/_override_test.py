@@ -268,8 +268,8 @@ def test__given_list_element_overrides__when_apply_overrides__then_all_elements_
     "3.14",
     "True",
     "1e3",
-    # False,
-    # 2.718, # TODO these should probably fail?
+    False,
+    2.718,
 ])
 def test__given_not_digit_string_list_element_override__when_apply_overrides__then_raises_valueerror(nonindex: str):
     conf = { "list": [1, 2, 3, 4, 5] }

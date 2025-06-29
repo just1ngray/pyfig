@@ -3,7 +3,13 @@ from typing import Dict, Any
 
 def _list_element_override_with_error_messaging(src: list, index: Any, override: Any):
     try:
-        index_validated = int(index)
+        if type(index) == str:
+            index_validated = int(index)
+        elif type(index) == int:
+            index_validated = index
+        else:
+            raise ValueError()
+
         current = src[index_validated]
     except ValueError:
         raise ValueError(f"Error applying override to index in list. '{index}' is not an integer")
