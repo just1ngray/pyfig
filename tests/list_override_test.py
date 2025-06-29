@@ -18,6 +18,16 @@ class Config(Pyfig):
     ]
 
 
+def test__given_config__when_model_dump_dict__then_serializes():
+    """ this test mostly exists to help illustrate the format of the config """
+    assert Config().model_dump_dict() == {
+        "direct": [1, 2, 3],
+        "objects": [
+            { "index": 0, "name": "foo" },
+            { "index": 1, "name": "bar" },
+        ]
+    }
+
 def test__given_new_direct_list__when_load_configuration__then_overrides_entire_list():
     direct = [1, 1, 2, 3, 5]
     assert load_configuration(Config, [{ "direct": direct }], []) == Config(direct=direct)
