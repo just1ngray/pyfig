@@ -283,23 +283,23 @@ def test__given_large_index_list_element_override__when_unify_overrides__then_ra
     with pytest.raises(IndexError):
         unify_overrides(override, conf)
 
-# def test__given_list_element_override_with_nested_changes__when_apply_overrides__then_applies_at_lowest_level():
-#     config = {
-#         "list": [
-#             { "name": "Alice", "age": 20 },
-#             { "name": "Billy", "age": 21 },
-#             { "name": "Chris", "age": 22 },
-#         ]
-#     }
-#     apply_overrides(config, {
-#         "list": {
-#             1: { "name": "Bob" }
-#         }
-#     })
-#     assert config == {
-#         "list": [
-#             { "name": "Alice", "age": 20 },
-#             { "name": "Bob", "age": 21 },
-#             { "name": "Chris", "age": 22 },
-#         ]
-#     }
+def test__given_list_element_override_with_nested_changes__when_apply_overrides__then_applies_at_lowest_level():
+    conf = {
+        "list": [
+            { "name": "Alice", "age": 20 },
+            { "name": "Billy", "age": 21 },
+            { "name": "Chris", "age": 22 },
+        ]
+    }
+    override = {
+        "list": {
+            1: { "name": "Bob" }
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "list": [
+            { "name": "Alice", "age": 20 },
+            { "name": "Bob", "age": 21 },
+            { "name": "Chris", "age": 22 },
+        ]
+    }

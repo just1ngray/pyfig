@@ -22,7 +22,7 @@ def _list_element_override_with_error_messaging(src: list, index: Any, override:
         src[index_validated] = override
         return
 
-    raise NotImplementedError()
+    src[index_validated] = unify_overrides(override, current)
 
 
 def unify_overrides(*overrides: Dict) -> Dict:
