@@ -3,13 +3,20 @@ from typing import Dict, Any
 
 def _list_element_override_with_error_messaging(src: list, index: Any, override: Any):
     try:
-        src[int(index)] = override
+        index_validated = int(index)
+        current = src[index_validated]
     except ValueError:
         raise ValueError(f"Error applying override to index in list. '{index}' is not an integer")
     except IndexError:
         raise IndexError(
             f"Error applying override to out of bounds index {index}. List is only {len(src)} elements long"
         )
+
+    if not isinstance(current, (dict, list)):
+        src[index_validated] = override
+        return
+
+    raise NotImplementedError()
 
 
 def unify_overrides(*overrides: Dict) -> Dict:
@@ -44,29 +51,3 @@ def unify_overrides(*overrides: Dict) -> Dict:
             unified[key] = value
 
     return unified
-
-
-def apply_overrides(conf: Dict, override: Dict, trace: str="") -> None:
-    """
-    Using a base configuration, applies an override to it.
-
-    The override is applied at the lowest possible dictionary-key level.
-
-    Args:
-        conf:       the base configuration
-        override:   the override to apply
-        trace:      the current trace of the configuration
-
-    Returns:
-        None (mutates `conf` in place)
-    """
-    for key, value in override.items():
-        if key not in conf:
-            conf[key] = value
-        elif isinstance(conf[key], dict) and isinstance(value, dict):
-            apply_overrides(conf[key], value, trace=f"{trace}.{key}")
-        elif isinstance(conf[key], list) and isinstance(value, dict):
-            for idx, override_element in value.items():
-                _list_element_override_with_error_messaging(conf[key], idx, override_element)
-        else:
-            conf[key] = value
