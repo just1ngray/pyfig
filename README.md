@@ -1,8 +1,7 @@
 # pyfig
 
-A Python configuration system that's powerful enough to meet complex requirements, while
-being simple enough so new contributors to your software can confidently make changes without
-worrying how to get everything setup.
+Pyfig is a configuration library for Python that makes [pydantic](docs.pydantic.dev), the popular data validation
+library, suitable to be used as your application's main configuration system.
 
 ## Features
 
@@ -19,9 +18,8 @@ Note: pyfig does not inherently support changes to the config at runtime. This f
 pip install jpyfig
 ```
 
-### Requirements
-
-Strictly, only [pydantic](https://docs.pydantic.dev/latest/) is required.
+Strictly, only [pydantic](https://docs.pydantic.dev/latest/) is required. A suitable version is automatically
+installed when you install pyfig.
 
 To make full use of the all features, you may also need some of:
 - [pyyaml](https://pyyaml.org/)
@@ -33,12 +31,7 @@ These can be independently installed as necessary.
 
 ## Usage
 
-1. Install pyfig
-2. Create a class tree of subclasses of `Pyfig` (*). Provide all attributes, types, docs, and defaults in your `.py`'s
-3. Create overriding configs that can be applied hierarchically based on your requirements
-4. Load your configuration:
-    - Using either the built-in 'metaconf' feature, or
-    - By creating your own implementation and calling `pyfig.load_configuration(...)` appropriately
+...
 
 ## Tutorial
 
