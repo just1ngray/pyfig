@@ -44,6 +44,7 @@ class LoggingConfig(Pyfig):
     level: str = "DEBUG"
 
 class Config(Pyfig):
+    """ The root of my application's configuration """
     logging: LoggingConfig = LoggingConfig()
 ```
 
