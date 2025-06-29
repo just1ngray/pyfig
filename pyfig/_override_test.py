@@ -283,7 +283,7 @@ def test__given_large_index_list_element_override__when_unify_overrides__then_ra
     with pytest.raises(IndexError):
         unify_overrides(override, conf)
 
-def test__given_list_element_override_with_nested_changes__when_apply_overrides__then_applies_at_lowest_level():
+def test__given_list_element_override_with_nested_dict_changes__when_unify_overrides__then_applies_at_lowest_level():
     conf = {
         "list": [
             { "name": "Alice", "age": 20 },
@@ -301,5 +301,46 @@ def test__given_list_element_override_with_nested_changes__when_apply_overrides_
             { "name": "Alice", "age": 20 },
             { "name": "Bob", "age": 21 },
             { "name": "Chris", "age": 22 },
+        ]
+    }
+
+def test__given_list_element_override_with_nested_element_changes__when_unify_overrides__then_applies_at_lowest_level():
+    conf = {
+        "sequences": [
+            [1, 1, 2, 3, 5],
+            [1, 2, 4, 8, 16],
+        ]
+    }
+    override = {
+        "sequences": {
+            0: {
+                1: 10,
+                "2": 20,
+            }
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "sequences": [
+            [1, 10, 20, 3, 5],
+            [1, 2, 4, 8, 16],
+        ]
+    }
+
+def test__given_list_element_override_with_nested_list_changes__when_unify_overrides__then_applies_list_atomically():
+    conf = {
+        "sequences": [
+            [1, 1, 2, 3, 5],
+            [1, 2, 4, 8, 16],
+        ]
+    }
+    override = {
+        "sequences": {
+            0: ["list", "is", "still", "atomic"]
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "sequences": [
+            ["list", "is", "still", "atomic"],
+            [1, 2, 4, 8, 16],
         ]
     }

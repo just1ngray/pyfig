@@ -18,11 +18,19 @@ def _list_element_override_with_error_messaging(src: list, index: Any, override:
             f"Error applying override to out of bounds index {index}. List is only {len(src)} elements long"
         )
 
-    if not isinstance(current, (dict, list)):
-        src[index_validated] = override
-        return
+    # overriding a list element at a nested dict level
+    if isinstance(current, dict):
+        src[index_validated] = unify_overrides(override, current)
 
-    src[index_validated] = unify_overrides(override, current)
+    # overriding a list element with another list element override
+    # (we can't just call unify_overrides because it doesn't support lists)
+    elif isinstance(current, list) and isinstance(override, dict):
+        for sub_override_idx, sub_override_val in override.items():
+            _list_element_override_with_error_messaging(current, sub_override_idx, sub_override_val)
+
+    # atomic list element override
+    else:
+        src[index_validated] = override
 
 
 def unify_overrides(*overrides: Dict) -> Dict:
