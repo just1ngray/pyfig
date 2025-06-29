@@ -50,3 +50,26 @@ def test__given_overriding_config__when_disallow_unused__then_config_is_loaded(o
 
 Similar to above (Default Config is Loadable), you may need to construct some mock evaluator(s) to ensure that
 overrides work to create a loadable config using `load_configuration`.
+
+## Commiting your loaded metaconfs
+
+It can be challenging to conceptualize how different combinations of overrides and/or evaluators will load into your
+application's configuration classes. To make config changes easy to understand and review, you can commit each
+metaconf's loaded config to the repository so the loaded versions will be reviewed in PRs and kept in your git history.
+This can be done manually and verified with a test, using a pipeline, or even pre-commit hooks.
+
+Example using [pytest](https://docs.pytest.org/en/stable/) to confirm that the manually adjusted committed versions
+are up to date:
+
+```python
+@pytest.mark.parametrize("metaconf_path", Path("...").glob("**/*.yaml"), ids=Path.as_posix)
+def test__given_metaconf__when_serialized__then_is_same_as_committed_version(metaconf_path: Path):
+    # some mocking may be required if you're making heavy use of environment specific evaluators
+    metaconf = Metaconf.from_path(metaconf_path)
+    config = metaconf.load_config()
+    config_serialized = config.model_dump_json(indent=2)
+
+    committed = Path(...).read_text("utf-8")
+
+    assert config_serialized == committed
+```
