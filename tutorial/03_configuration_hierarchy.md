@@ -55,9 +55,7 @@ tasks:
    - baz
 ```
 
-A current limitation of Pyfig is its inability to override a specific list element. If you want to override
-an element of a list, then the entire list needs to be re-defined again. I am working to remove this limitation
-in a future Pyfig version, but for now Pyfig cannot override specific list elements.
+Overriding a list with another list will override the entire list:
 
 ```yaml
 tasks:
@@ -71,6 +69,25 @@ db:
 api: http://localhost:8080/api
 tasks:
    - overridden
+```
+
+But using a special override syntax, it is possible to override an element of a list by its index:
+
+```yaml
+tasks:
+  1: index number 1 is the second element
+  -1: even negative indexes work
+
+# will override the default to
+
+db:
+  host: localhost
+  port: 1234
+api: http://localhost:8080/api
+tasks:
+   - foo
+   - index number 1 is the second element
+   - even negative indexes work
 ```
 
 Multiple overrides can be specified, and they'll be applied in priority order. They can even override each other:
