@@ -58,7 +58,7 @@ directory at the path, then you should opt to use `FilePath` or `DirectoryPath` 
 
 ## Serializing your config
 
-To serialize your config (to a plain JSON-supported object), you should use `.model_dump(mode="json")` to create
+To serialize your config (to a plain JSON-supported object), you should use `.model_dump_dict()` to create
 a dictionary of json-serializable types. Then, using your preferred dictionary serialization implementation, you
 can dump that serializable dictionary. E.g.,
 
