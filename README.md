@@ -52,11 +52,12 @@ Rules:
 
 1. The root of your configuration must inherit from `Pyfig` class
 2. All `Pyfig` children must provide valid defaults for all fields
-3. You can basically any type annotation or composition of annotations
+3. You can use basically any type of advanced annotation as supported by pydantic
 
 Your configuration can be as large or as complex as you need it to be. `Pyfig` is an extension of pydantic's
 `BaseModel` class, so it supports all the advanced validation features built into that library. If you're unfamiliar
 with pydantic, think of it as an advanced form of dataclasses. To get started, consider reviewing some of the following:
+[Getting Started](https://docs.pydantic.dev/latest/),
 [Fields](https://docs.pydantic.dev/latest/concepts/fields/),
 [Types](https://docs.pydantic.dev/latest/concepts/types/),
 [Unions](https://docs.pydantic.dev/latest/concepts/unions/),
@@ -72,6 +73,12 @@ work against Pyfig configuration because:
   are type-annotating your code
 - Document the configuration classes and fields so you (and others) can remember what does what
 
+```python
+from .myconfig import LoggingConfig
+def setup_global_logging(config: LoggingConfig):
+    ...
+```
+
 ### Step #4: Create overrides
 
 Different deployments of your application may require different combinations of configuration adjustments from the
@@ -85,23 +92,30 @@ overrides.
 
 Generally speaking, overrides are merged at the lowest dictionary level. So if you have the following default config:
 
-```yaml
-string: string type
-integer: 3
-floating: 0.14
-boolean: False
-nested:
-    something: else
-lists:
-    - foo
-    - bar
+```python
+{
+    "string": "string type",
+    "integer": 3,
+    "floating": 0.14,
+    "boolean": False,
+    "nested": {
+        "something": "else"
+    },
+    "lists": [
+        "foo",
+        "bar"
+    ]
+}
 ```
 
 and you override with
 
-```yaml
-nested:
-    something: new
+```python
+{
+    "nested": {
+        "something": "new"
+    }
+}
 ```
 
 Then only `nested.something` will be modified (now equal to `"new"`), and all the defaults will remain in-place.
@@ -110,42 +124,52 @@ Then only `nested.something` will be modified (now equal to `"new"`), and all th
 
 Like many configuration systems, overriding a list is done atomically. Meaning you re-define the entire list.
 
-```yaml
-lists:
-    - baz
+```python
+# override to the default config from above
+{
+    "lists": ["baz"]
+}
 ```
 
 will now give you:
 
-```yaml
-string: string type
-integer: 3
-floating: 0.14
-boolean: False
-nested:
-    something: else
-lists:
-    - baz
+```python
+{
+    "string": "string type",
+    "integer": 3,
+    "floating": 0.14,
+    "boolean": False,
+    "nested": {
+        "something": "else"
+    },
+    "lists": ["baz"]
+}
 ```
 
-A special syntax allows you to override just a single element by its index:
+A special syntax allows you to override just a single element at a particular index:
 
-```yaml
-lists:
-    1: overridden
+```python
+{
+    "lists": {
+        1: "overridden"
+    }
+}
 ```
 
-```yaml
-...
-lists:
-    - foo
-    - overridden
+```python
+{
+    ...
+    "lists": [
+        "foo",
+        "overridden"
+    ]
+}
 ```
 
 ### Step #5: Load your configuration
 
 Use the `load_configuration` function to apply overrides onto your default config. Serializing your overrides
-into a Python dict is (by default) beyond the scope of Pyfig.
+into their Python dict representations is beyond the scope of Pyfig.
 
 ```python
 from pyfig import load_configuration
@@ -159,5 +183,5 @@ config = load_configuration(RootConfig, overrides, [])
 
 ## Tutorial
 
-There is a small tutorial ready to walk you through the features and patterns when using Pyfig.
+There is a tutorial ready to walk you through the features and patterns when using Pyfig.
 [Click me](https://github.com/just1ngray/pyfig/tree/master/tutorial)
