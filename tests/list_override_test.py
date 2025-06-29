@@ -119,3 +119,26 @@ def test__given_multiple_object_list_element_overrides__when_load_configuration_
         ObjectConfig(index=9, name="foo"),
         ObjectConfig(index=1, name="baz"),
     ])
+
+def test__given_multiple_list_element_overrides__when_load_configuration__then_all_updated():
+    override_low = {
+        "direct": {
+            0: 100,
+        },
+        "objects": {
+            0: { "index": 100 },
+            1: { "index": 1, "name": "baz" },
+        }
+    }
+    override_high = {
+        "direct": {
+            0: 200,
+        }
+    }
+    assert load_configuration(Config, [override_high, override_low], []).model_dump_dict() == {
+        "direct": [200, 2, 3],
+        "objects": [
+            { "index": 100, "name": "foo" },
+            { "index": 1, "name": "baz" },
+        ]
+    }
