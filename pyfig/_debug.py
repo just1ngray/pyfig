@@ -24,8 +24,9 @@ class PyfigDebug(BaseModel):
             yield (field_name, num_accessed)
 
             value = super().__getattribute__(field_name)
-            if isinstance(value, BaseModel):
-                yield from value.pyfig_debug_accessed()
+            if isinstance(value, PyfigDebug):
+                for sub_field_name, sub_num_accessed in value.pyfig_debug_accessed():
+                    yield (f"{field_name}.{sub_field_name}", sub_num_accessed)
 
 
 def pyfig_debug(cfg: T) -> T:
@@ -59,7 +60,7 @@ ex = Example()
 print(type(ex))
 print(ex)
 print(ex.foo)
-print(ex.model_dump_json())
+print(ex.model_dump_json(indent=4))
 
 print("---")
 
@@ -70,11 +71,14 @@ print(ex_debug.foo)
 print(list(ex_debug.pyfig_debug_accessed()))
 print(ex_debug.foo)
 print(list(ex_debug.pyfig_debug_accessed()))
-print(ex_debug.model_dump_json())
+print(ex_debug.model_dump_json(indent=4))
 
 print("---")
 
 print(type(ex))
 print(ex)
 print(ex.foo)
-print(ex.model_dump_json())
+print(ex.model_dump_json(indent=4))
+
+print("---")
+print(list(ex_debug.pyfig_debug_accessed()))
