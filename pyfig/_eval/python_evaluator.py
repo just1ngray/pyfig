@@ -10,7 +10,7 @@ class PythonEvaluator(AbstractEvaluator):
 
     It should be used with caution as it can execute arbitrary code.
 
-    Syntax: "${{pyeval:1 + 1}}"
+    Syntax: "${{pyeval.1 + 1}}"
     """
 
     def __init__(self, *, danger: str = "not_accepted"):
