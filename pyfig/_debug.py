@@ -11,6 +11,18 @@ _ACCESS_COUNTER = "_pyfig_debug_access_counter"
 
 
 class PyfigDebug(BaseModel):
+    """
+    A wrapper class that tracks field use in your configuration.
+
+    This aims to be helpful in identifying config sections that were never used, or are no longer used. They can be
+    removed at the discretion of the maintainer.
+
+    Main entrypoint to this feature is via `PyfigDebug.wrap()` static method.
+
+    See:
+        `PyfigDebug.wrap()`
+    """
+
     def __getattribute__(self, name: str) -> Any:
         if name != "__class__" and name in super().__getattribute__(_ACCESS_COUNTER):
             counter = super().__getattribute__(_ACCESS_COUNTER)
