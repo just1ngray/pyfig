@@ -6,7 +6,6 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 
 _ACCEPTED_INPUT_TYPES = (BaseModel, list, dict)
-W = TypeVar("W", BaseModel, list, dict)
 
 _ACCESS_COUNTER = "_pyfig_debug_access_counter"
 
@@ -100,7 +99,7 @@ class PyfigDebug(BaseModel):
         return super().__getattribute__(_ACCESS_COUNTER)[field]
 
     @staticmethod
-    def _wrap(cfg: Union[BaseModel, list]):
+    def _wrap(cfg):
         if isinstance(cfg, BaseModel):
             debug_class = type(f"{cfg.__class__.__name__}PyfigDebug", (cfg.__class__, PyfigDebug), {})
 
