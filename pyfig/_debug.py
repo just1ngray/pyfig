@@ -130,6 +130,8 @@ class PyfigDebug(BaseModel):
     @staticmethod
     def wrap(cfg: T) -> T:
         """
+        !! WARNING !! This feature is experimental and may not work properly for configs with untested edge cases.
+
         Copies a Pyfig and injects behaviour to track the number of times each field is accessed.
 
         Usage:
