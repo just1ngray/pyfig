@@ -213,3 +213,33 @@ def test__given_dict_config__when_pyfig_debug_wrap__then_tracks_values_recursive
         "mapping2d[('c', 'd')]['baz'].id": 1,
     }
     assert set(dbg.pyfig_debug_unused()) == { "mapping2d[('a', 'b')]['bar'].id" }
+
+def test__given_tuple_config__when_pyfig_debug_wrap__then_tracks_tuple_items():
+    class Pos2d(BaseModel):
+        x: float
+        y: float
+
+    class Config(Pyfig):
+        box: Tuple[Pos2d, Pos2d] = (
+            Pos2d(x=10.0, y=10.0),
+            Pos2d(x=25.0, y=25.0),
+        )
+
+    cfg = Config()
+    dbg = PyfigDebug.wrap(cfg)
+
+    print(dbg.box[0].x)
+    print(dbg.box[1].y)
+
+    assert isinstance(dbg, PyfigDebug)
+    assert dict(dbg.pyfig_debug_accesses()) == {
+        "box": 2,
+        "box[0].x": 1,
+        "box[0].y": 0,
+        "box[1].x": 0,
+        "box[1].y": 1,
+    }
+    assert set(dbg.pyfig_debug_unused()) == {
+        "box[0].y",
+        "box[1].x"
+    }

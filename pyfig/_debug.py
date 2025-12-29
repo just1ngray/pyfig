@@ -114,7 +114,7 @@ def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
             for sub_paths, sub_num_accessed in _pyfig_debug_accesses(value):
                 yield ([field_name, *sub_paths], sub_num_accessed)
 
-    elif isinstance(cfg, list):
+    elif isinstance(cfg, (list, tuple)):
         for i, item in enumerate(cfg):
             for sub_paths, num in _pyfig_debug_accesses(item):
                 yield ([f"[{i}]", *sub_paths], num)
@@ -144,6 +144,9 @@ def _wrap(cfg):
 
     elif isinstance(cfg, list):
         return [_wrap(item) for item in cfg]
+
+    elif isinstance(cfg, tuple):
+        return tuple(_wrap(item) for item in cfg)
 
     elif isinstance(cfg, dict):
         return {k: _wrap(v) for k, v in cfg.items()}
