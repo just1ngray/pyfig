@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 
-_ACCEPTED_INPUT_TYPES = (BaseModel, list)
-W = TypeVar("W", BaseModel, list)
+_ACCEPTED_INPUT_TYPES = (BaseModel, list, dict)
+W = TypeVar("W", BaseModel, list, dict)
 
 _ACCESS_COUNTER = "_pyfig_debug_access_counter"
 
@@ -20,8 +20,8 @@ class PyfigDebug(BaseModel):
         return super().__getattribute__(name)
 
     @staticmethod
-    def _pyfig_debug_accesses(cfg: Union["PyfigDebug", List]) -> Generator[Tuple[List[str], int], Any, None]:
-        accepted = (PyfigDebug, list)
+    def _pyfig_debug_accesses(cfg: Union["PyfigDebug", list, dict]) -> Generator[Tuple[List[str], int], Any, None]:
+        accepted = (PyfigDebug, list, dict)
 
         if isinstance(cfg, PyfigDebug):
             for field_name, num_accessed in getattr(cfg, _ACCESS_COUNTER).items():
@@ -38,6 +38,12 @@ class PyfigDebug(BaseModel):
                 if isinstance(item, accepted):
                     for sub_paths, num in PyfigDebug._pyfig_debug_accesses(item):
                         yield ([f"[{i}]", *sub_paths], num)
+
+        elif isinstance(cfg, dict):
+            for k, v in cfg.items():
+                if isinstance(v, accepted):
+                    for sub_paths, num in PyfigDebug._pyfig_debug_accesses(v):
+                        yield ([f"[{repr(k)}]", *sub_paths], num)
 
         elif isinstance(cfg, accepted):
             raise NotImplementedError()
@@ -119,6 +125,15 @@ class PyfigDebug(BaseModel):
                     wrapped.append(PyfigDebug._wrap(item))
                 else:
                     wrapped.append(item)
+            return wrapped
+
+        elif isinstance(cfg, dict):
+            wrapped = {}
+            for k, v in cfg.items():
+                if isinstance(v, _ACCEPTED_INPUT_TYPES):
+                    wrapped[k] = PyfigDebug._wrap(v)
+                else:
+                    wrapped[k] = v
             return wrapped
 
         elif isinstance(cfg, _ACCEPTED_INPUT_TYPES):
