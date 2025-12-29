@@ -129,7 +129,8 @@ is handled by external modules like `json`, `pyyaml`, `toml`, etc.
 
 #### List overrides
 
-Like many other configuration systems, overrides to lists are applied atomically.
+Like many other configuration systems, overrides to lists are applied atomically. This means you must redefine the
+entire list (continue reading for an exception)
 
 ```python
 override = {
