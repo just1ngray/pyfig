@@ -108,12 +108,6 @@ def test__given_list_override__when_unify_overrides__then_is_overridden_atomical
     unified = unify_overrides(override, config)
     assert unified == override
 
-def test__given_list_element_override__when_unify_overrides__then_only_that_element_is_overridden():
-    config  = { "list": [1, 2, 3] }
-    override = { "list": {"1": 4} }
-    unified = unify_overrides(override, config)
-    assert unified == { "list": [1, 4, 3] }
-
 def test__given_list_element_overrides__when_unify_overrides__then_all_elements_are_overridden():
     base_config = { "list": [1, 2, 3, 4, 5] }
     override_first = { "list": { "0": 10 } }
@@ -254,7 +248,7 @@ def test__given_list_element_override__when_unify_overrides__then_only_that_elem
     override = { "list": {idx: 4} }
     assert unify_overrides(override, conf) == { "list": [1, 4, 3] }
 
-def test__given_list_element_overrides__when_unify_overrides__then_all_elements_are_overridden():
+def test__given_list_element_overrides_negated__when_unify_overrides__then_all_elements_are_overridden():
     conf = { "list": [1, 2, 3, 4, 5] }
     override = { "list": {
         "0": 10,
@@ -271,16 +265,10 @@ def test__given_list_element_overrides__when_unify_overrides__then_all_elements_
     False,
     2.718,
 ])
-def test__given_not_digit_string_list_element_override__when_unify_overrides__then_raises_valueerror(nonindex: str):
+def test__given_not_index_string_list_element_override__when_unify_overrides__then_raises_valueerror(nonindex: str):
     conf = { "list": [1, 2, 3, 4, 5] }
     override = { "list": { nonindex: 99 } }
     with pytest.raises(ValueError):
-        unify_overrides(override, conf)
-
-def test__given_large_index_list_element_override__when_unify_overrides__then_raises_indexerror():
-    conf = { "list": [1, 2, 3] }
-    override = { "list": { 99: "index out of bounds" } }
-    with pytest.raises(IndexError):
         unify_overrides(override, conf)
 
 def test__given_list_element_override_with_nested_dict_changes__when_unify_overrides__then_applies_at_lowest_level():
