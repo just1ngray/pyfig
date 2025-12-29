@@ -1,11 +1,9 @@
-from typing import Any, Generator, TypeVar, List, Tuple, Union
+from typing import Any, Generator, TypeVar, List, Tuple
 
 from pydantic import BaseModel
 
 
 T = TypeVar("T", bound=BaseModel)
-
-_ACCEPTED_INPUT_TYPES = (BaseModel, list, dict)
 
 _ACCESS_COUNTER = "_pyfig_debug_access_counter"
 
@@ -103,39 +101,28 @@ class PyfigDebug(BaseModel):
         return _wrap(cfg)
 
 
-def _pyfig_debug_accesses(cfg: Union["PyfigDebug", list, dict]) -> Generator[Tuple[List[str], int], Any, None]:
+def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
     """
     Walks through a config recursively (incl. through selected types of collections) and yields a mapping
     between config paths to the number of times each field has been accessed.
     """
-    accepted = (PyfigDebug, list, dict)
-
     if isinstance(cfg, PyfigDebug):
         for field_name, num_accessed in getattr(cfg, _ACCESS_COUNTER).items():
             yield ([field_name], num_accessed)
 
             value = super(BaseModel, cfg).__getattribute__(field_name)
-            if isinstance(value, accepted):
-                for sub_paths, sub_num_accessed in _pyfig_debug_accesses(value):
-                    yield ([field_name, *sub_paths], sub_num_accessed)
+            for sub_paths, sub_num_accessed in _pyfig_debug_accesses(value):
+                yield ([field_name, *sub_paths], sub_num_accessed)
 
     elif isinstance(cfg, list):
         for i, item in enumerate(cfg):
-            if isinstance(item, accepted):
-                for sub_paths, num in _pyfig_debug_accesses(item):
-                    yield ([f"[{i}]", *sub_paths], num)
+            for sub_paths, num in _pyfig_debug_accesses(item):
+                yield ([f"[{i}]", *sub_paths], num)
 
     elif isinstance(cfg, dict):
         for k, v in cfg.items():
-            if isinstance(v, accepted):
-                for sub_paths, num in _pyfig_debug_accesses(v):
-                    yield ([f"[{repr(k)}]", *sub_paths], num)
-
-    elif isinstance(cfg, accepted):
-        raise NotImplementedError("Should be unreachable")
-
-    else:
-        raise TypeError(f"Cannot iterate through {type(cfg)} type")
+            for sub_paths, num in _pyfig_debug_accesses(v):
+                yield ([f"[{repr(k)}]", *sub_paths], num)
 
 
 def _wrap(cfg):
@@ -151,31 +138,15 @@ def _wrap(cfg):
 
         for fieldname in new_instance.__class__.model_fields:
             value = super(BaseModel, new_instance).__getattribute__(fieldname)
-            if isinstance(value, _ACCEPTED_INPUT_TYPES):
-                setattr(new_instance, fieldname, _wrap(value))
+            setattr(new_instance, fieldname, _wrap(value))
 
         return new_instance
 
     elif isinstance(cfg, list):
-        wrapped = []
-        for item in cfg:
-            if isinstance(item, _ACCEPTED_INPUT_TYPES):
-                wrapped.append(_wrap(item))
-            else:
-                wrapped.append(item)
-        return wrapped
+        return [_wrap(item) for item in cfg]
 
     elif isinstance(cfg, dict):
-        wrapped = {}
-        for k, v in cfg.items():
-            if isinstance(v, _ACCEPTED_INPUT_TYPES):
-                wrapped[k] = _wrap(v)
-            else:
-                wrapped[k] = v
-        return wrapped
-
-    elif isinstance(cfg, _ACCEPTED_INPUT_TYPES):
-        raise NotImplementedError("Should be unreachable")
+        return {k: _wrap(v) for k, v in cfg.items()}
 
     else:
-        raise TypeError(f"Cannot wrap {type(cfg)} type")
+        return cfg
