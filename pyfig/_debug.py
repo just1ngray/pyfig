@@ -132,10 +132,10 @@ def _pyfig_debug_accesses(cfg: Union["PyfigDebug", list, dict]) -> Generator[Tup
                     yield ([f"[{repr(k)}]", *sub_paths], num)
 
     elif isinstance(cfg, accepted):
-        raise NotImplementedError()
+        raise NotImplementedError("Should be unreachable")
 
     else:
-        raise TypeError()
+        raise TypeError(f"Cannot iterate through {type(cfg)} type")
 
 
 def _wrap(cfg):
@@ -175,7 +175,7 @@ def _wrap(cfg):
         return wrapped
 
     elif isinstance(cfg, _ACCEPTED_INPUT_TYPES):
-        raise NotImplementedError()
+        raise NotImplementedError("Should be unreachable")
 
     else:
-        raise TypeError()
+        raise TypeError(f"Cannot wrap {type(cfg)} type")
