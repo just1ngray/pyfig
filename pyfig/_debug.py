@@ -106,15 +106,12 @@ class PyfigDebug(BaseModel):
 
             new_instance = cfg.model_copy()
             new_instance.__class__ = debug_class
-            setattr(new_instance, _ACCESS_COUNTER, {})
+            setattr(new_instance, _ACCESS_COUNTER, { field: 0 for field in new_instance.__class__.model_fields })
 
             for fieldname in new_instance.__class__.model_fields:
-                value = getattr(new_instance, fieldname)
+                value = super(BaseModel, new_instance).__getattribute__(fieldname)
                 if isinstance(value, _ACCEPTED_INPUT_TYPES):
                     setattr(new_instance, fieldname, PyfigDebug._wrap(value))
-
-            # start tracking now
-            getattr(new_instance, _ACCESS_COUNTER).update({ field: 0 for field in new_instance.__class__.model_fields })
 
             return new_instance
 
