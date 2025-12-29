@@ -39,6 +39,12 @@ class PyfigDebug(BaseModel):
                     for sub_paths, num in PyfigDebug._pyfig_debug_accesses(item):
                         yield ([f"[{i}]", *sub_paths], num)
 
+        elif isinstance(cfg, accepted):
+            raise NotImplementedError()
+
+        else:
+            raise TypeError()
+
 
     def pyfig_debug_accesses(self) -> Generator[Tuple[str, int], Any, None]:
         """
