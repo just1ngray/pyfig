@@ -106,7 +106,6 @@ def _pyfig_debug_accesses(cfg: Union["PyfigDebug", list, dict]) -> Generator[Tup
             if isinstance(value, accepted):
                 for sub_paths, sub_num_accessed in _pyfig_debug_accesses(value):
                     yield ([field_name, *sub_paths], sub_num_accessed)
-        return
 
     elif isinstance(cfg, list):
         for i, item in enumerate(cfg):
