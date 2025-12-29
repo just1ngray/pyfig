@@ -22,10 +22,10 @@ class PyfigDebug(BaseModel):
     """
 
     def __getattribute__(self, name: str) -> Any:
-        if not name.startswith("__") and self in _ACCESS_COUNTER and name in _ACCESS_COUNTER[self]:
+        if not name.startswith("__") and name in _ACCESS_COUNTER[self]:
             _ACCESS_COUNTER[self][name] = _ACCESS_COUNTER[self][name] + 1
 
-        return super().__getattribute__(name)
+        return super(BaseModel, self).__getattribute__(name)
 
     def pyfig_debug_accesses(self) -> Generator[Tuple[str, int], Any, None]:
         """
@@ -99,12 +99,8 @@ class PyfigDebug(BaseModel):
         """
         return _wrap(cfg)
 
-    # if the type is not otherwise hashable (commonly the case)
     def __hash__(self) -> int:
-        try:
-            return super().__hash__()
-        except TypeError:
-            return id(self)
+        return super(BaseModel, self).__hash__()
 
 
 def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
