@@ -99,6 +99,8 @@ class PyfigDebug(BaseModel):
         """
         return _wrap(cfg)
 
+    # this introduces possible incompatability where an application may rely on a specific hash function on their
+    # config but this overrides it
     def __hash__(self) -> int:
         return super(BaseModel, self).__hash__()
 
