@@ -1,12 +1,31 @@
+import gc
+import weakref
 from typing import Any, Generator, TypeVar, List, Tuple, Dict
-from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
 
 
 T = TypeVar("T", bound=BaseModel)
 
-_ACCESS_COUNTER: Dict["PyfigDebug", Dict[str, int]] = WeakKeyDictionary()
+class _IdentityWrapper:
+    def __init__(self, obj):
+        self.obj = weakref.ref(obj)
+
+        if _gc_callback_access_counter not in gc.callbacks:
+            gc.callbacks.append(_gc_callback_access_counter)
+
+    def __hash__(self) -> int:
+        return id(self.obj)
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, _IdentityWrapper) and self.obj == other.obj
+
+_ACCESS_COUNTER: Dict[_IdentityWrapper, Dict[str, int]] = {}
+
+def _gc_callback_access_counter(phase, info):
+    for idw in _ACCESS_COUNTER.copy().keys():
+        if idw.obj() is None:
+            _ACCESS_COUNTER.pop(idw)
 
 class PyfigDebug(BaseModel):
     """
@@ -22,8 +41,8 @@ class PyfigDebug(BaseModel):
     """
 
     def __getattribute__(self, name: str) -> Any:
-        if not name.startswith("__") and name in _ACCESS_COUNTER[self]:
-            _ACCESS_COUNTER[self][name] = _ACCESS_COUNTER[self][name] + 1
+        if not name.startswith("__") and name in _ACCESS_COUNTER[_IdentityWrapper(self)]:
+            _ACCESS_COUNTER[_IdentityWrapper(self)][name] = _ACCESS_COUNTER[_IdentityWrapper(self)][name] + 1
 
         return super(BaseModel, self).__getattribute__(name)
 
@@ -71,7 +90,7 @@ class PyfigDebug(BaseModel):
         Raises:
             KeyError if the provided field name is not tracked
         """
-        return _ACCESS_COUNTER[self][field]
+        return _ACCESS_COUNTER[_IdentityWrapper(self)][field]
 
     @staticmethod
     def wrap(cfg: T) -> T:
@@ -99,11 +118,6 @@ class PyfigDebug(BaseModel):
         """
         return _wrap(cfg)
 
-    # this introduces possible incompatability where an application may rely on a specific hash function on their
-    # config but this overrides it
-    def __hash__(self) -> int:
-        return super(BaseModel, self).__hash__()
-
 
 def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
     """
@@ -111,7 +125,7 @@ def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
     between config paths to the number of times each field has been accessed.
     """
     if isinstance(cfg, PyfigDebug):
-        for field_name, num_accessed in _ACCESS_COUNTER[cfg].items():
+        for field_name, num_accessed in _ACCESS_COUNTER[_IdentityWrapper(cfg)].items():
             yield ([field_name], num_accessed)
 
             value = super(BaseModel, cfg).__getattribute__(field_name)
@@ -138,7 +152,7 @@ def _wrap(cfg):
 
         new_instance = cfg.model_copy()
         new_instance.__class__ = debug_class
-        _ACCESS_COUNTER[new_instance] = { field: 0 for field in new_instance.__class__.model_fields }
+        _ACCESS_COUNTER[_IdentityWrapper(new_instance)] = { field: 0 for field in new_instance.__class__.model_fields }
 
         for fieldname in new_instance.__class__.model_fields:
             value = super(BaseModel, new_instance).__getattribute__(fieldname)
