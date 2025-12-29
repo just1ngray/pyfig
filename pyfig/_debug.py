@@ -30,6 +30,12 @@ class PyfigDebug(BaseModel):
             if isinstance(value, PyfigDebug):
                 for sub_field_name, sub_num_accessed in value.pyfig_debug_accesses():
                     yield (f"{field_name}.{sub_field_name}", sub_num_accessed)
+            elif isinstance(value, list):
+                for i, item in enumerate(value):
+                    if not isinstance(item, PyfigDebug):
+                        continue
+                    for sub_field_name, sub_num_accessed in item.pyfig_debug_accesses():
+                        yield (f"{field_name}[{i}].{sub_field_name}", sub_num_accessed)
 
     def pyfig_debug_unused(self) -> Generator[str, Any, None]:
         """
@@ -95,6 +101,8 @@ class PyfigDebug(BaseModel):
 
             if isinstance(value, BaseModel):
                 setattr(new_instance, fieldname, PyfigDebug.wrap(value))
+            elif isinstance(value, list):
+                setattr(new_instance, fieldname, [PyfigDebug.wrap(element) for element in value])
 
         # start tracking now
         getattr(new_instance, _ACCESS_COUNTER).update({ field: 0 for field in new_instance.__class__.model_fields })

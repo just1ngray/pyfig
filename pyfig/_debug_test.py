@@ -1,4 +1,8 @@
+from typing import List
 from pathlib import Path
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
 
 from ._pyfig import Pyfig
 from ._debug import PyfigDebug
@@ -92,3 +96,32 @@ def test__given_nested_model__when_pyfig_debug_wrap__then_tracks_access():
     else:
         raise RuntimeError("It must be an instance. The isinstance check just demonstrates how to "
                            "incorporate this nicely into your 'main' with good typing")
+
+def test__given_list_of_configs__when_pyfig_debug_wrap__then_tracks_elements_too():
+    class Thing(BaseModel):
+        name: str
+        id: str = Field(default_factory=lambda: str(uuid4()))
+
+    class Config(Pyfig):
+        things: List[Thing] = [
+            Thing(name="foo"),
+            Thing(name="bar"),
+            Thing(name="baz"),
+        ]
+
+    cfg = Config()
+    dbg = PyfigDebug.wrap(cfg)
+
+    print(dbg.things[0].name, dbg.things[0].id)
+    print(dbg.things[1].name)
+
+    assert isinstance(dbg, PyfigDebug)
+    assert dict(dbg.pyfig_debug_accesses()) == {
+        "things": 3,
+        "things[0].name": 1,
+        "things[0].id": 1,
+        "things[1].name": 1,
+        "things[1].id": 0,
+        "things[2].name": 0,
+        "things[2].id": 0,
+    }
