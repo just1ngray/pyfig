@@ -124,6 +124,11 @@ def test__given_list_of_configs__when_pyfig_debug_wrap__then_tracks_elements_too
         "things[2].name": 0,
         "things[2].id": 0,
     }
+    assert set(dbg.pyfig_debug_unused()) == {
+        "things[1].id",
+        "things[2].name",
+        "things[2].id",
+    }
 
 def test__given_2d_list__when_pyfig_debug_wrap__then_tracks_recursively():
     class Thing(BaseModel):
@@ -150,6 +155,11 @@ def test__given_2d_list__when_pyfig_debug_wrap__then_tracks_recursively():
         "things[1][0].id": 1,
         "things[1][1].id": 0,
     }
+    assert set(dbg.pyfig_debug_unused()) == {
+        "things[0][0].id",
+        "things[0][1].id",
+        "things[1][1].id",
+    }
 
 def test__given_dict_config__when_pyfig_debug_wrap__then_tracks_values():
     class Id(BaseModel):
@@ -172,6 +182,7 @@ def test__given_dict_config__when_pyfig_debug_wrap__then_tracks_values():
         "mapping['foo'].id": 1,
         "mapping['bar'].id": 0,
     }
+    assert set(dbg.pyfig_debug_unused()) == { "mapping['bar'].id" }
 
 def test__given_dict_config__when_pyfig_debug_wrap__then_tracks_values_recursively():
     class Id(BaseModel):
@@ -201,3 +212,4 @@ def test__given_dict_config__when_pyfig_debug_wrap__then_tracks_values_recursive
         "mapping2d[('a', 'b')]['bar'].id": 0,
         "mapping2d[('c', 'd')]['baz'].id": 1,
     }
+    assert set(dbg.pyfig_debug_unused()) == { "mapping2d[('a', 'b')]['bar'].id" }
