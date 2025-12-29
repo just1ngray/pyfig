@@ -228,7 +228,7 @@ Suppose the environment variable `SOME_ENVIRONMENT_VARIABLE` is set to `foo`. Th
 
 #### Pyfig's built-in evaluators
 
-All evaluators are implemented in [this module](../pyfig/_eval/).
+All evaluators are implemented in [this module](./pyfig/_eval/).
 
 | Class Name | Evaluator Name | Purpose | Basic Syntax |
 | - | - | - | - |
