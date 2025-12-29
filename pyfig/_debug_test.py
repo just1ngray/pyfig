@@ -1,11 +1,13 @@
+import gc
 from typing import List, Dict, Tuple
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from pydantic import BaseModel, Field
 
 from ._pyfig import Pyfig
-from ._debug import PyfigDebug
+from ._debug import PyfigDebug, _ACCESS_COUNTER
 
 
 def test__given_simple_model__when_pyfig_debug_wrap__then_tracks_access():
@@ -243,3 +245,14 @@ def test__given_tuple_config__when_pyfig_debug_wrap__then_tracks_tuple_items():
         "box[0].y",
         "box[1].x"
     }
+
+@pytest.fixture(scope="module", autouse=True)
+def test__given_access_counter__when_gc__then_no_memory_leak():
+    gc.collect()
+    assert len(_ACCESS_COUNTER) == 0
+
+    # wait until after and check again
+    yield None
+
+    gc.collect()
+    assert len(_ACCESS_COUNTER) == 0

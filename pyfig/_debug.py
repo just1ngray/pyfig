@@ -1,12 +1,12 @@
-from typing import Any, Generator, TypeVar, List, Tuple
+from typing import Any, Generator, TypeVar, List, Tuple, Dict
+from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
 
 
 T = TypeVar("T", bound=BaseModel)
 
-_ACCESS_COUNTER = "_pyfig_debug_access_counter"
-
+_ACCESS_COUNTER: Dict["PyfigDebug", Dict[str, int]] = WeakKeyDictionary()
 
 class PyfigDebug(BaseModel):
     """
@@ -22,9 +22,8 @@ class PyfigDebug(BaseModel):
     """
 
     def __getattribute__(self, name: str) -> Any:
-        if name != "__class__" and name in super().__getattribute__(_ACCESS_COUNTER):
-            counter = super().__getattribute__(_ACCESS_COUNTER)
-            counter[name] = counter[name] + 1
+        if not name.startswith("__") and self in _ACCESS_COUNTER and name in _ACCESS_COUNTER[self]:
+            _ACCESS_COUNTER[self][name] = _ACCESS_COUNTER[self][name] + 1
 
         return super().__getattribute__(name)
 
@@ -72,7 +71,7 @@ class PyfigDebug(BaseModel):
         Raises:
             KeyError if the provided field name is not tracked
         """
-        return super().__getattribute__(_ACCESS_COUNTER)[field]
+        return _ACCESS_COUNTER[self][field]
 
     @staticmethod
     def wrap(cfg: T) -> T:
@@ -100,6 +99,13 @@ class PyfigDebug(BaseModel):
         """
         return _wrap(cfg)
 
+    # if the type is not otherwise hashable (commonly the case)
+    def __hash__(self) -> int:
+        try:
+            return super().__hash__()
+        except TypeError:
+            return id(self)
+
 
 def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
     """
@@ -107,7 +113,7 @@ def _pyfig_debug_accesses(cfg) -> Generator[Tuple[List[str], int], Any, None]:
     between config paths to the number of times each field has been accessed.
     """
     if isinstance(cfg, PyfigDebug):
-        for field_name, num_accessed in getattr(cfg, _ACCESS_COUNTER).items():
+        for field_name, num_accessed in _ACCESS_COUNTER[cfg].items():
             yield ([field_name], num_accessed)
 
             value = super(BaseModel, cfg).__getattribute__(field_name)
@@ -134,7 +140,7 @@ def _wrap(cfg):
 
         new_instance = cfg.model_copy()
         new_instance.__class__ = debug_class
-        setattr(new_instance, _ACCESS_COUNTER, { field: 0 for field in new_instance.__class__.model_fields })
+        _ACCESS_COUNTER[new_instance] = { field: 0 for field in new_instance.__class__.model_fields }
 
         for fieldname in new_instance.__class__.model_fields:
             value = super(BaseModel, new_instance).__getattribute__(fieldname)
