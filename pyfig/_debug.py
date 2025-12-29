@@ -1,9 +1,12 @@
-from typing import Any, Generator, TypeVar, List, Tuple
+from typing import Any, Generator, TypeVar, List, Tuple, Union
 
 from pydantic import BaseModel
 
 
 T = TypeVar("T", bound=BaseModel)
+
+_ACCEPTED_INPUT_TYPES = (BaseModel, list)
+W = TypeVar("W", BaseModel, list)
 
 _ACCESS_COUNTER = "_pyfig_debug_access_counter"
 
@@ -16,26 +19,42 @@ class PyfigDebug(BaseModel):
 
         return super().__getattribute__(name)
 
+    @staticmethod
+    def _pyfig_debug_accesses(cfg: Union["PyfigDebug", List]) -> Generator[Tuple[List[str], int], Any, None]:
+        accepted = (PyfigDebug, list)
+
+        if isinstance(cfg, PyfigDebug):
+            for field_name, num_accessed in getattr(cfg, _ACCESS_COUNTER).items():
+                yield ([field_name], num_accessed)
+
+                value = super(BaseModel, cfg).__getattribute__(field_name)
+                if isinstance(value, accepted):
+                    for sub_paths, sub_num_accessed in PyfigDebug._pyfig_debug_accesses(value):
+                        yield ([field_name, *sub_paths], sub_num_accessed)
+            return
+
+        elif isinstance(cfg, list):
+            for i, item in enumerate(cfg):
+                if isinstance(item, accepted):
+                    for sub_paths, num in PyfigDebug._pyfig_debug_accesses(item):
+                        yield ([f"[{i}]", *sub_paths], num)
+
+
     def pyfig_debug_accesses(self) -> Generator[Tuple[str, int], Any, None]:
         """
         Recursive iterator over the fields and how frequently they've been accessed. Ordered to first yield
         shallower config paths before deeper ones.
         """
-        field_name: str
-        num_accessed: int
-        for field_name, num_accessed in super().__getattribute__(_ACCESS_COUNTER).items():
-            yield (field_name, num_accessed)
+        for path, num in PyfigDebug._pyfig_debug_accesses(self):
+            formatted_path = path[0]
+            for p in path[1:]:
+                if p[0] == "[":
+                    formatted_path += p
+                else:
+                    formatted_path += f".{p}"
 
-            value = super().__getattribute__(field_name)
-            if isinstance(value, PyfigDebug):
-                for sub_field_name, sub_num_accessed in value.pyfig_debug_accesses():
-                    yield (f"{field_name}.{sub_field_name}", sub_num_accessed)
-            elif isinstance(value, list):
-                for i, item in enumerate(value):
-                    if not isinstance(item, PyfigDebug):
-                        continue
-                    for sub_field_name, sub_num_accessed in item.pyfig_debug_accesses():
-                        yield (f"{field_name}[{i}].{sub_field_name}", sub_num_accessed)
+            yield (formatted_path, num)
+
 
     def pyfig_debug_unused(self) -> Generator[str, Any, None]:
         """
@@ -69,6 +88,40 @@ class PyfigDebug(BaseModel):
         return super().__getattribute__(_ACCESS_COUNTER)[field]
 
     @staticmethod
+    def _wrap(cfg: Union[BaseModel, list]):
+        if isinstance(cfg, BaseModel):
+            debug_class = type(f"{cfg.__class__.__name__}PyfigDebug", (cfg.__class__, PyfigDebug), {})
+
+            new_instance = cfg.model_copy()
+            new_instance.__class__ = debug_class
+            setattr(new_instance, _ACCESS_COUNTER, {})
+
+            for fieldname in new_instance.__class__.model_fields:
+                value = getattr(new_instance, fieldname)
+                if isinstance(value, _ACCEPTED_INPUT_TYPES):
+                    setattr(new_instance, fieldname, PyfigDebug._wrap(value))
+
+            # start tracking now
+            getattr(new_instance, _ACCESS_COUNTER).update({ field: 0 for field in new_instance.__class__.model_fields })
+
+            return new_instance
+
+        elif isinstance(cfg, list):
+            wrapped = []
+            for item in cfg:
+                if isinstance(item, _ACCEPTED_INPUT_TYPES):
+                    wrapped.append(PyfigDebug._wrap(item))
+                else:
+                    wrapped.append(item)
+            return wrapped
+
+        elif isinstance(cfg, _ACCEPTED_INPUT_TYPES):
+            raise NotImplementedError()
+
+        else:
+            raise TypeError()
+
+    @staticmethod
     def wrap(cfg: T) -> T:
         """
         Copies a Pyfig and injects behaviour to track the number of times each field is accessed.
@@ -90,21 +143,4 @@ class PyfigDebug(BaseModel):
             a subclass tree of cfg instance which should be usable in the same ways as the original `cfg` arg,
             but with additional tracking behaviour that allows you to later check how often each field is used.
         """
-        debug_class = type(f"{cfg.__class__.__name__}PyfigDebug", (cfg.__class__, PyfigDebug), {})
-
-        new_instance = cfg.model_copy()
-        new_instance.__class__ = debug_class
-        setattr(new_instance, _ACCESS_COUNTER, {})
-
-        for fieldname in new_instance.__class__.model_fields:
-            value = getattr(new_instance, fieldname)
-
-            if isinstance(value, BaseModel):
-                setattr(new_instance, fieldname, PyfigDebug.wrap(value))
-            elif isinstance(value, list):
-                setattr(new_instance, fieldname, [PyfigDebug.wrap(element) for element in value])
-
-        # start tracking now
-        getattr(new_instance, _ACCESS_COUNTER).update({ field: 0 for field in new_instance.__class__.model_fields })
-
-        return new_instance
+        return PyfigDebug._wrap(cfg)
