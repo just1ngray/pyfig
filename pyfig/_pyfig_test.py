@@ -3,7 +3,7 @@ from pathlib import Path
 from enum import Enum
 
 import pytest
-from pydantic import ValidationError, ConfigDict
+from pydantic import ValidationError, ConfigDict, Field
 
 from ._pyfig import Pyfig
 
@@ -67,3 +67,12 @@ def test__given_model_config_validate_default_false__when_defining_pyfig_class__
     class _MyConfig(Pyfig):
         model_config = ConfigDict(validate_default=False)
         bad_default_value: int = "not an integer"
+
+def test__given_default_given_via_factory__when_defining_pyfig_class__then_no_error():
+    class _MyConfig(Pyfig):
+        # note that unlike dataclasses, pydantic doesn't need default_factory for reference types
+        foo: List[str] = Field(default_factory=list)
+
+def test__given_default_given_via_Field_arg__when_defining_pyfig_class__then_no_error():
+    class _MyConfig(Pyfig):
+        foo: bool = Field(default=True)
