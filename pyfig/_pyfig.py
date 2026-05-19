@@ -20,7 +20,7 @@ class Pyfig(BaseModel):
         Validates that all fields have a default value.
         """
         for name, field in cls.model_fields.items():
-            if field.get_default() == PydanticUndefined:
+            if field.get_default(call_default_factory=True) == PydanticUndefined:
                 raise TypeError(f"Field '{name}' of '{cls.__qualname__}' must have a default value")
 
         # Construct the class once to see if the defaults are valid.
