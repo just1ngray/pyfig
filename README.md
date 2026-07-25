@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/just1ngray/pyfig/blob/master/LICENSE)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/jpyfig?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/jpyfig)
 
-Pyfig is a configuration library for Python that makes [pydantic](docs.pydantic.dev), the popular data validation
+Pyfig is a configuration library for Python that makes [pydantic](https://docs.pydantic.dev), the popular data validation
 library, suitable to be used as your application's main configuration system.
 
 - [pyfig](#pyfig)
