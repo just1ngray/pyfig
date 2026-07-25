@@ -332,3 +332,100 @@ def test__given_list_element_override_with_nested_list_changes__when_unify_overr
             [1, 2, 4, 8, 16],
         ]
     }
+
+def test__given_append_one_to_list__when_unify_overrides__then_appends_to_list():
+    conf = {
+        "cart": [
+            { "item": "Bacon",   "qty": 1 },
+            { "item": "Lettuce", "qty": 2 },
+            { "item": "Tomato",  "qty": 3 },
+        ]
+    }
+    override = {
+        "cart": {
+            ">": { "item": "Buns", "qty": 4 }
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "cart": [
+            { "item": "Bacon",   "qty": 1 },
+            { "item": "Lettuce", "qty": 2 },
+            { "item": "Tomato",  "qty": 3 },
+            { "item": "Buns",    "qty": 4 },
+        ]
+    }
+
+def test__given_prepend_one_to_list__when_unify_overrides__then_prepends_to_list():
+    conf = {
+        "cart": [
+            { "item": "Bacon",   "qty": 1 },
+            { "item": "Lettuce", "qty": 2 },
+            { "item": "Tomato",  "qty": 3 },
+        ]
+    }
+    override = {
+        "cart": {
+            "<": { "item": "Buns", "qty": 4 }
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "cart": [
+            { "item": "Buns",    "qty": 4 },
+            { "item": "Bacon",   "qty": 1 },
+            { "item": "Lettuce", "qty": 2 },
+            { "item": "Tomato",  "qty": 3 },
+        ]
+    }
+
+def test__given_add_many_to_list__when_unify_overrides__then_extends_list():
+    conf = {
+        "cart": [
+            { "item": "Bacon",   "qty": 10 },
+            { "item": "Lettuce", "qty": 20 },
+            { "item": "Tomato",  "qty": 30 },
+        ]
+    }
+    override = {
+        "cart": {
+            ">":      { "item": "Ketchup", "qty": 1 },
+            "<any":   { "item": "Mustard", "qty": 2 },
+            "<thing": { "item": "Mayo",    "qty": 3 },
+            ">xyz":   { "item": "Cheese",  "qty": 4 },
+            "<":      { "item": "Pickles", "qty": 5 },
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "cart": [
+            { "item": "Pickles", "qty": 5 },
+            { "item": "Mayo",    "qty": 3 },
+            { "item": "Mustard", "qty": 2 },
+            { "item": "Bacon",   "qty": 10 },
+            { "item": "Lettuce", "qty": 20 },
+            { "item": "Tomato",  "qty": 30 },
+            { "item": "Ketchup", "qty": 1 },
+            { "item": "Cheese",  "qty": 4 },
+        ]
+    }
+
+def test__given_all_list_overrides__when_unify_overrides__then_handles_all():
+    conf = {
+        "cart": [
+            { "item": "Bacon",   "qty": 1 },
+            { "item": "Lettuce", "qty": 2 },
+            { "item": "Tomato",  "qty": 3 },
+        ]
+    }
+    override = {
+        "cart": {
+            ">": { "item": "Buns", "qty": 4 },
+            "0": { "item": "Bacon", "qty": 10 },
+        }
+    }
+    assert unify_overrides(override, conf) == {
+        "cart": [
+            { "item": "Bacon",   "qty": 10 },
+            { "item": "Lettuce", "qty": 2 },
+            { "item": "Tomato",  "qty": 3 },
+            { "item": "Buns",    "qty": 4 },
+        ]
+    }

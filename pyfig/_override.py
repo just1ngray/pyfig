@@ -5,7 +5,14 @@ def _list_element_override_with_error_messaging(src: list, key: Any, override: A
     # preferring type() checks over isinstance() for strictness
     # i.e., we don't want a bool to be treated as an int
     if type(key) == str:
-        index_validated = int(key)
+        if key.startswith(">"):
+            src.append(override)
+            return
+        elif key.startswith("<"):
+            src.insert(0, override)
+            return
+        else:
+            index_validated = int(key)
     elif type(key) == int:
         index_validated = key
     else:
