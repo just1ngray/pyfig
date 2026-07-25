@@ -1,7 +1,7 @@
 # pyfig
 
 [![PyPI version](https://img.shields.io/pypi/v/jpyfig.svg)](https://pypi.org/project/jpyfig/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/jpyfig.svg)](https://pypi.org/project/jpyfig/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/jpyfig?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/jpyfig)
 [![Python versions](https://img.shields.io/pypi/pyversions/jpyfig.svg)](https://pypi.org/project/jpyfig/)
 [![CI](https://github.com/just1ngray/pyfig/actions/workflows/pytest.yml/badge.svg)](https://github.com/just1ngray/pyfig/actions/workflows/pytest.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/just1ngray/pyfig/blob/master/LICENSE)
