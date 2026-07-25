@@ -27,6 +27,9 @@ Homepage = "https://github.com/just1ngray/pyfig"
 addopts = "--cov --cov-report term-missing --no-cov-on-fail"
 console_output_style = "count"
 
+[tool.coverage.run]
+omit = ["*_test.py"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
