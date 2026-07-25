@@ -2,7 +2,7 @@ from typing import Dict, Any
 
 
 def _list_element_override_with_error_messaging(src: list, key: Any, override: Any):
-    if isinstance(key, str):
+    if type(key) == str:
         index_validated = int(key)
     elif type(key) == int:
         index_validated = key
