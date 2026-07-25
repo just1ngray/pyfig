@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Install uv
       uses: astral-sh/setup-uv@v3
       with:
@@ -20,9 +22,9 @@ jobs:
     - name: Verify pyproject.toml version matches Git tag
       run: |
         tag=${GITHUB_REF#refs/tags/v}
-        version=$(uv version --short)
+        version=$(uv tool run hatch version)
         if [ "$tag" != "$version" ]; then
-          echo "Git tag ($tag) does not match version in pyproject.toml ($version)"
+          echo "Git tag ($tag) does not match dynamic hatch version ($version)"
           exit 1
         fi
       shell: bash
