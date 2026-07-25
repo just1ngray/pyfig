@@ -1,5 +1,9 @@
 # pyfig
 
+[![PyPI version](https://img.shields.io/pypi/v/jpyfig.svg)](https://pypi.org/project/jpyfig/)
+[![CI](https://github.com/just1ngray/pyfig/actions/workflows/pytest.yml/badge.svg)](https://github.com/just1ngray/pyfig/actions/workflows/pytest.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/just1ngray/pyfig/blob/master/LICENSE)
+
 Pyfig is a configuration library for Python that makes [pydantic](docs.pydantic.dev), the popular data validation
 library, suitable to be used as your application's main configuration system.
 
