@@ -1,21 +1,28 @@
 from typing import Dict, Any
 
 
-def _list_element_override_with_error_messaging(src: list, index: Any, override: Any):
-    try:
-        if type(index) == str:
-            index_validated = int(index)
-        elif type(index) == int:
-            index_validated = index
+def _list_element_override_with_error_messaging(src: list, key: Any, override: Any):
+    # preferring type() checks over isinstance() for strictness
+    # i.e., we don't want a bool to be treated as an int
+    if type(key) == str:
+        if key.startswith(">"):
+            src.append(override)
+            return
+        elif key.startswith("<"):
+            src.insert(0, override)
+            return
         else:
-            raise ValueError()
+            index_validated = int(key)
+    elif type(key) == int:
+        index_validated = key
+    else:
+        raise ValueError(f"Error applying override to index in list. '{key}' is not an integer")
 
+    try:
         current = src[index_validated]
-    except ValueError:
-        raise ValueError(f"Error applying override to index in list. '{index}' is not an integer")
     except IndexError:
         raise IndexError(
-            f"Error applying override to out of bounds index {index}. List is only {len(src)} elements long"
+            f"Error applying override to out of bounds index {key}. List is only {len(src)} elements long"
         )
 
     # overriding a list element at a nested dict level

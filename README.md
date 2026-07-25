@@ -135,31 +135,45 @@ is handled by external modules like `json`, `pyyaml`, `toml`, etc.
 
 #### List overrides
 
-Like many other configuration systems, overrides to lists are applied atomically. This means you must redefine the
-entire list (continue reading for an exception)
+If you override a list with another list, the override *atomically replaces* the original list. This behaviour is
+relatively standard among object merging approaches as it's impossible to know the intent of the override without
+additional information.
 
 ```python
+# replace the task list entirely; dropping configuration for 'echo hello-world' from earlier
 override = {
-    "tasks": [
-        {
-            "enabled": True,
-            "interval_seconds": 60.0,
-            "command": [
-                "sqlite",
-                "application.db",
-                "PRAGMA wal_checkpoint(TRUNCATE);"
-            ]
-        }
-    ]
+    "tasks": [{
+        "command": ["sqlite", "application.db", "PRAGMA wal_checkpoint(TRUNCATE);"]
+    }]
 }
 ```
 
-However, pyfig also implements a novel trick that allows for overriding a single item in a list using its index.
+However, pyfig also implements some novel syntax where you can override a list using a dictionary.
+
+##### Overriding a single item in a list by index
+
+To override a single item in a list by index, use the index as the key and the new value as the value. Normal python
+indexing applies, so you may use negative indices to count from the end of the list.
 
 ```python
+# set tasks[1].enabled = False
 override = {
     "tasks": {
         1: { "enabled": False }
+    }
+}
+```
+
+##### Appending or prepending items to a list
+
+To add new items to the list, you can use `>` (append) or `<` (prepend) operators as an override key. If multiple
+elements need to be added, then you can deduplicate them by adding random text after the initial character.
+
+```python
+# append a new task to the end of the list
+override = {
+    "tasks": {
+        ">new_task": { "command": [ "..." ] }
     }
 }
 ```
