@@ -16,6 +16,8 @@ library, suitable to be used as your application's main configuration system.
     - [Default configuration](#default-configuration)
     - [Overrides](#overrides)
       - [List overrides](#list-overrides)
+        - [Overriding a single item in a list by index](#overriding-a-single-item-in-a-list-by-index)
+        - [Appending or prepending items to a list](#appending-or-prepending-items-to-a-list)
     - [Evaluators](#evaluators)
       - [Syntax](#syntax)
       - [Substitution behaviour](#substitution-behaviour)
