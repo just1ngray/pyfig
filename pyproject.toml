@@ -1,14 +1,25 @@
+##
+# Project build
+##
+
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["pyfig"]
 exclude = ["*_test.py"]
 
+[tool.hatch.version]
+source = "vcs"
+
+##
+# Project metadata
+##
+
 [project]
 name = "jpyfig"
-version = "0.3.1"
+dynamic = ["version"]
 description = "Configuration library built around pydantic"
 readme = "README.md"
 license = { text = "MIT" }
@@ -23,9 +34,16 @@ requires-python = ">=3.8"
 [project.urls]
 Homepage = "https://github.com/just1ngray/pyfig"
 
+##
+# Development, tooling, etc.
+##
+
 [tool.pytest.ini_options]
 addopts = "--cov --cov-report term-missing --no-cov-on-fail"
 console_output_style = "count"
+
+[tool.coverage.run]
+omit = ["*_test.py"]
 
 [dependency-groups]
 dev = [

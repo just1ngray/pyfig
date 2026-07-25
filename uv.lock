@@ -396,7 +396,6 @@ wheels = [
 
 [[package]]
 name = "jpyfig"
-version = "0.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic", version = "2.10.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
