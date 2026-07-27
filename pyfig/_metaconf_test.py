@@ -114,9 +114,9 @@ def test__given_python_version__when__get_toml_lib_loads__then_returns_appropria
     if sys.version_info >= (3, 11):
         import tomllib
 
-        assert _get_toml_lib_loads() == tomllib.loads
+        assert _get_toml_lib_loads() is tomllib.loads
     else:
-        assert _get_toml_lib_loads() == tomli.loads
+        assert _get_toml_lib_loads() is tomli.loads
 
 
 def test__given_ini__when_load_dict__then_dict_is_loaded(pytestdir: Path):
