@@ -407,17 +407,17 @@ all = [
     { name = "pyyaml" },
     { name = "sympy", version = "1.13.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-    { name = "tomli" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 sympy = [
     { name = "sympy", version = "1.13.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
 ]
 toml = [
-    { name = "toml" },
+    { name = "toml", marker = "python_full_version < '3.11'" },
 ]
 tomli = [
-    { name = "tomli" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 yaml = [
     { name = "pyyaml" },
@@ -447,9 +447,9 @@ requires-dist = [
     { name = "pyyaml", marker = "extra == 'yaml'" },
     { name = "sympy", marker = "extra == 'all'" },
     { name = "sympy", marker = "extra == 'sympy'" },
-    { name = "toml", marker = "extra == 'toml'" },
-    { name = "tomli", marker = "extra == 'all'" },
-    { name = "tomli", marker = "extra == 'tomli'" },
+    { name = "toml", marker = "python_full_version < '3.11' and extra == 'toml'" },
+    { name = "tomli", marker = "python_full_version < '3.11' and extra == 'all'" },
+    { name = "tomli", marker = "python_full_version < '3.11' and extra == 'tomli'" },
 ]
 provides-extras = ["all", "sympy", "toml", "tomli", "yaml"]
 

@@ -110,7 +110,10 @@ def test__given_toml_lib__when_load_dict__then_calls_with_content(
     assert loaded == {"mock": "loaded"}
 
 
-@pytest.mark.skipif(sys.version_info < (3, 11))
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="built-in tomllib is only available in Python 3.11+",
+)
 def test__given_py3_11__when__get_toml_lib_loads__then_returns_builtin_tomllib_loads():
     import tomllib
 
