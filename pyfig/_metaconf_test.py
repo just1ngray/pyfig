@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
-import tomli
 from pydantic import ValidationError
 
 from ._eval import AbstractEvaluator
@@ -116,6 +115,8 @@ def test__given_python_version__when__get_toml_lib_loads__then_returns_appropria
 
         assert _get_toml_lib_loads() is tomllib.loads
     else:
+        import tomli
+
         assert _get_toml_lib_loads() is tomli.loads
 
 
