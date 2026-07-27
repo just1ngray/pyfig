@@ -120,6 +120,10 @@ def test__given_py3_11__when__get_toml_lib_loads__then_returns_builtin_tomllib_l
     assert _get_toml_lib_loads() == tomllib.loads
 
 
+@pytest.mark.skipif(
+    sys.version_info >= (3, 11),
+    reason="built-in tomllib is preferred when available",
+)
 def test__given_tomli__when__get_toml_lib_loads__then_returns_tomli_loads():
     assert _get_toml_lib_loads() == tomli.loads
 
