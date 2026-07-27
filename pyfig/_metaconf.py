@@ -1,13 +1,13 @@
-import json
 import configparser
 import importlib
-from typing import List, Dict, Any, Union, Type, TypeVar
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Type, TypeVar, Union
 
-from ._pyfig import Pyfig
 from ._eval import AbstractEvaluator
 from ._loader import load_configuration
+from ._pyfig import Pyfig
 
 
 def _load_dict_from_yaml(path: Union[str, Path]) -> Dict[str, Any]:
@@ -32,22 +32,40 @@ def _load_dict_from_json(path: Union[str, Path]) -> Dict[str, Any]:
         return json.load(file)
 
 
+def _get_toml_lib_loads() -> Callable[[str], Dict[str, Any]]:
+    try:
+        # built-in since v3.11
+        import tomllib
+
+        return tomllib.loads
+    except ImportError:
+        pass
+
+    try:
+        import tomli
+
+        return tomli.loads
+    except ImportError:
+        pass
+
+    try:
+        import toml
+
+        return toml.loads
+    except ImportError:
+        pass
+
+    raise ImportError(
+        "No toml support found. Upgrade to Py>=3.11, or install one of tomli or toml."
+    )
+
+
 def _load_dict_from_toml(path: Union[str, Path]) -> Dict[str, Any]:
     """
     Load a TOML file from a path.
     """
-    try:
-        # pylint: disable=import-outside-toplevel
-        import toml
-    except ImportError:
-        try:
-            # pylint: disable=import-outside-toplevel
-            import tomli as toml
-        except ImportError:
-            raise ImportError("Please install toml or tomli to load TOML files.") from None
-
-    contents = Path(path).read_text("utf-8")
-    return toml.loads(contents)
+    content = Path(path).read_text("utf-8")
+    return _get_toml_lib_loads()(content)
 
 
 def _load_dict_from_ini(path: Union[str, Path]) -> Dict[str, Any]:

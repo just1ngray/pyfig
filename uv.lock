@@ -402,8 +402,30 @@ dependencies = [
     { name = "pydantic", version = "2.13.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
 ]
 
+[package.optional-dependencies]
+all = [
+    { name = "pyyaml" },
+    { name = "sympy", version = "1.13.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "tomli" },
+]
+sympy = [
+    { name = "sympy", version = "1.13.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+]
+toml = [
+    { name = "toml" },
+]
+tomli = [
+    { name = "tomli" },
+]
+yaml = [
+    { name = "pyyaml" },
+]
+
 [package.dev-dependencies]
 dev = [
+    { name = "jpyfig", extra = ["all"] },
     { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pytest", version = "8.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
     { name = "pytest", version = "9.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -415,13 +437,25 @@ dev = [
     { name = "sympy", version = "1.13.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "toml" },
+    { name = "tomli" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2.0.0,<3.0.0" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
+    { name = "pyyaml", marker = "extra == 'all'" },
+    { name = "pyyaml", marker = "extra == 'yaml'" },
+    { name = "sympy", marker = "extra == 'all'" },
+    { name = "sympy", marker = "extra == 'sympy'" },
+    { name = "toml", marker = "extra == 'toml'" },
+    { name = "tomli", marker = "extra == 'all'" },
+    { name = "tomli", marker = "extra == 'tomli'" },
+]
+provides-extras = ["all", "sympy", "toml", "tomli", "yaml"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "jpyfig", extras = ["all"] },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "pytest-sugar", specifier = ">=1.1.1" },
@@ -429,6 +463,7 @@ dev = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "sympy", specifier = ">=1.13.3" },
     { name = "toml", specifier = ">=0.10.2" },
+    { name = "tomli", specifier = ">=2.4.1" },
 ]
 
 [[package]]

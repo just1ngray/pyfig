@@ -1,12 +1,15 @@
+import sys
 import textwrap
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 import pytest
+import tomli
 from pydantic import ValidationError
 
-from ._pyfig import Pyfig
 from ._eval import AbstractEvaluator
-from ._metaconf import _load_dict, _construct_evaluator, Metaconf
+from ._metaconf import Metaconf, _construct_evaluator, _get_toml_lib_loads, _load_dict
+from ._pyfig import Pyfig
 
 
 @pytest.mark.parametrize("ext", ["yaml", "yml"])
@@ -88,6 +91,34 @@ def test__given_toml__when_load_dict__then_dict_is_loaded(pytestdir: Path):
             "array": [1, 2, 3]
         }
     }
+
+
+@patch("pyfig._metaconf._get_toml_lib_loads")
+def test__given_toml_lib__when_load_dict__then_calls_with_content(
+    mock_toml_lib_loads: Mock, pytestdir: Path
+):
+    mock_loads = Mock(return_value={"mock": "loaded"})
+    mock_toml_lib_loads.return_value = mock_loads
+
+    path = pytestdir / "some.toml"
+    content = "[mock]\nloaded = true\n"
+    path.write_text(content)
+
+    loaded = _load_dict(path)
+
+    mock_loads.assert_called_once_with(content)
+    assert loaded == {"mock": "loaded"}
+
+
+@pytest.mark.skipif(sys.version_info < (3, 11))
+def test__given_py3_11__when__get_toml_lib_loads__then_returns_builtin_tomllib_loads():
+    import tomllib
+
+    assert _get_toml_lib_loads() == tomllib.loads
+
+
+def test__given_tomli__when__get_toml_lib_loads__then_returns_tomli_loads():
+    assert _get_toml_lib_loads() == tomli.loads
 
 
 def test__given_ini__when_load_dict__then_dict_is_loaded(pytestdir: Path):

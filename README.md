@@ -40,12 +40,16 @@ library, suitable to be used as your application's main configuration system.
 pip install jpyfig
 ```
 
-Optional dependencies that must be manually installed.
+Optional dependencies, depending on the feature you need:
 
-- [pyyaml](https://pyyaml.org/)
-- [toml](https://pypi.org/project/toml/)
-- [tomli](https://pypi.org/project/tomli/)
-- [sympy](https://www.sympy.org/en/index.html)
+| Dependency | Install | Feature |
+|------------|---------|---------|
+| [pyyaml](https://pyyaml.org/) | `jpyfig[yaml]` | For yaml serialization and deserialization |
+| [sympy](https://www.sympy.org) | `jpyfig[sympy]` | For niche math operations in evaluators |
+| [tomli](https://pypi.org/project/tomli/) | `jpyfig[tomli]` | Preferred toml (de)serialization in Python < 3.11 |
+| [toml](https://pypi.org/project/toml/) | `jpyfig[toml]` | Another toml (de)serialization in Python < 3.11 |
+
+Or, install all optional dependencies with `jpyfig[all]`. (Not recommended for most use-cases!!)
 
 ## Features
 
