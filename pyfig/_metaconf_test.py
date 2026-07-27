@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
-import tomli
 from pydantic import ValidationError
 
 from ._eval import AbstractEvaluator
@@ -110,18 +109,15 @@ def test__given_toml_lib__when_load_dict__then_calls_with_content(
     assert loaded == {"mock": "loaded"}
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="built-in tomllib is only available in Python 3.11+",
-)
-def test__given_py3_11__when__get_toml_lib_loads__then_returns_builtin_tomllib_loads():
-    import tomllib
+def test__given_python_version__when__get_toml_lib_loads__then_returns_appropriate_loads():
+    if sys.version_info >= (3, 11):
+        import tomllib
 
-    assert _get_toml_lib_loads() == tomllib.loads
+        assert _get_toml_lib_loads() is tomllib.loads
+    else:
+        import tomli
 
-
-def test__given_tomli__when__get_toml_lib_loads__then_returns_tomli_loads():
-    assert _get_toml_lib_loads() == tomli.loads
+        assert _get_toml_lib_loads() is tomli.loads
 
 
 def test__given_ini__when_load_dict__then_dict_is_loaded(pytestdir: Path):
